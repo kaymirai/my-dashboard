@@ -3,102 +3,358 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Minimalist Pro Fixed Dashboard v2</title>
+  <title>Minimalist Pro Fixed Dashboard v4</title>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap');
-    :root { --bg: #000000; --panel: #111111; --text: #ffffff; --sub: #888888; --accent: #3b82f6; --border: #222222; }
+    
+    /* --- デザインシステム定義 --- */
+    :root {
+      /* 【色：3色のみ】 */
+      --c-base:   #000000;  /* 背景 */
+      --c-panel:  #111111;  /* カード背景 */
+      --c-text:   #ffffff;  /* 文字 */
+      --c-accent: #3b82f6;  /* アクセント（青） */
+      
+      /* グレーは「白の透明度」で表現し色数に含めない */
+      --c-sub:    rgba(255, 255, 255, 0.5); 
+      --c-border: rgba(255, 255, 255, 0.15);
+
+      /* 【文字サイズ：3種類のみ】 (時計を除く) */
+      --fz-lg: 1.8rem;   /* 強調データ (日付、株価、気温) */
+      --fz-md: 1.0rem;   /* 本文 (リスト、ニュース) */
+      --fz-sm: 0.75rem;  /* ラベル (見出し、補足、カレンダー日付) */
+    }
+
     * { box-sizing: border-box; }
     
     body {
-      margin: 0; padding: 20px; height: 100vh; overflow: hidden; background: var(--bg); color: var(--text);
+      margin: 0; padding: 20px; height: 100vh; overflow: hidden; 
+      background: var(--c-base); color: var(--c-text);
       font-family: 'Inter', sans-serif;
       display: grid;
       grid-template-columns: 38% 31% 31%;
       gap: 20px;
     }
 
-    /* カード共通: min-height: 0 が重要（これがないと中身が多い時に親を突き破る） */
+    /* --- 共通コンポーネント --- */
     .card { 
-      background: var(--panel); border: 1px solid var(--border); border-radius: 12px; 
-      padding: 18px; display: flex; flex-direction: column; 
+      background: var(--c-panel); 
+      border: 1px solid var(--c-border); 
+      border-radius: 12px; 
+      padding: 18px; 
+      display: flex; flex-direction: column; 
       min-height: 0; overflow: hidden; position: relative;
     }
 
-    /* --- 左：カレンダー --- */
+    /* 見出し (Small) */
+    h3 { 
+      margin: 0 0 12px 0; 
+      font-size: var(--fz-sm); 
+      letter-spacing: .15em; 
+      font-weight: 900; 
+      color: var(--c-sub); 
+      text-transform: uppercase; 
+      border-left: 4px solid var(--c-accent); /* ここだけアクセント色 */
+      padding-left: 10px; 
+      flex-shrink: 0; 
+    }
+
+    /* リストアイテム (Medium + TimeはSmall扱いでも良いが、視認性重視でMedium統一で色はSub) */
+    .item { 
+      display: flex; gap: 12px; padding: 10px 0; 
+      border-bottom: 1px solid var(--c-border); 
+      font-size: var(--fz-md); 
+      align-items: flex-start; 
+      font-weight: 700; 
+      line-height: 1.4; 
+    }
+    .item-time { 
+      color: var(--c-accent); 
+      min-width: 50px; 
+      font-size: var(--fz-sm); /* 時間は補足情報としてSmallに */
+      font-weight: 900; 
+      white-space: nowrap; 
+      margin-top: 2px;
+    }
+
+    /* スクロールエリア */
+    .scroll-area { flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 0; }
+    
+    /* --- 左カラム：時計 & カレンダー --- */
     .col-left { display: flex; flex-direction: column; gap: 20px; overflow: hidden; height: 100%; }
+    
     .clock-area { flex: 0 0 auto; padding: 5px 0; }
-    #date-display { font-size: 1.4rem; font-weight: 900; color: var(--accent); margin-bottom: 0px; }
+    
+    #date-display { 
+      font-size: var(--fz-lg); /* Large */
+      font-weight: 900; 
+      color: var(--c-accent); 
+      margin-bottom: -5px; 
+      letter-spacing: -1px;
+    }
+    
     .digital-clock {
-      font-size: clamp(3rem, 7vw, 6.5rem); /* 少しサイズ調整 */
-      font-weight: 900; line-height: 1.0; 
-      font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: -3px;
+      /* ここだけ例外サイズ */
+      font-size: clamp(4.5rem, 10.5vw, 10rem);
+      font-weight: 900; 
+      line-height: 0.85; 
+      font-variant-numeric: tabular-nums; 
+      white-space: nowrap; 
+      letter-spacing: -6px; 
+      margin-left: -4px;
+      color: var(--c-text);
     }
     
-    /* カレンダーカード: 確実に残りの高さを埋める */
-    #calendar-card { 
-      flex: 1; /* 余った高さを全て使う */
-      padding: 12px; /* カレンダー領域を広げるためパディングを少し減らす */
-    }
-    /* FullCalendar本体のコンテナ */
-    #calendar {
-      width: 100%;
-      height: 100%; /* 親の高さに追従 */
-      flex-grow: 1;
-    }
+    #calendar-card { flex: 1; padding: 12px; }
+    #calendar { width: 100%; height: 100%; }
 
-    /* --- 中央：スケジュール & TODO --- */
+    /* --- 中央カラム：スケジュール & ToDo --- */
     .col-center { display: flex; flex-direction: column; gap: 20px; overflow: hidden; height: 100%; }
-    
-    /* スケジュール: 内容に応じて伸びるが、画面の45%以上は取らない */
-    .schedule-card { 
-      flex: 0 1 auto; /* 必要分だけ伸びる */
-      max-height: 45%; 
-      min-height: 120px; /* 最低限の高さを保証 */
-    }
-    
-    /* TODO: 残りの高さを全て埋める */
-    .todo-card { 
-      flex: 1 1 0; /* 100% - スケジュール分 を埋める */
-      min-height: 0; /* 縮小を許可 */
-    }
+    .schedule-card { flex: 0 1 auto; max-height: 45%; min-height: 120px; }
+    .todo-card { flex: 1 1 0; min-height: 0; }
 
-    h3 { margin: 0 0 12px 0; font-size: .75rem; letter-spacing: .15em; font-weight: 900; color: var(--sub); text-transform: uppercase; border-left: 4px solid var(--sub); padding-left: 10px; flex-shrink: 0; }
-    
-    /* スクロールエリアの重要設定 */
-    .scroll-area { 
-      flex-grow: 1; 
-      overflow-y: auto; 
-      padding-right: 5px; 
-      min-height: 0; /* Flexアイテム内でのスクロールに必須 */
+    .todo-check { 
+      width: 18px; height: 18px; 
+      border: 2px solid var(--c-sub); 
+      border-radius: 4px; cursor: pointer; flex-shrink: 0; margin-top: 3px; 
     }
-    
-    .item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 1rem; align-items: flex-start; font-weight: 700; line-height: 1.4; }
-    .item-time { color: var(--accent); min-width: 50px; font-weight: 900; white-space: nowrap; }
-    .todo-check { width: 20px; height: 20px; border: 2px solid var(--sub); border-radius: 4px; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
-    .todo-check:hover { border-color: var(--accent); }
+    .todo-check:hover { border-color: var(--c-accent); }
 
-    /* --- 右：ニュース --- */
+    /* --- 右カラム：情報 --- */
     .col-right { display: flex; flex-direction: column; gap: 20px; overflow: hidden; height: 100%; }
-    .news-card { flex: 0 0 auto; height: 150px; cursor: pointer; } /* 高さを固定 */
-    .news-title { font-size: 1rem; font-weight: 900; line-height: 1.5; color: #fff; margin-top: 8px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    .weather-card { flex: 1; min-height: 0; justify-content: center; } /* 天気は余白を埋める形に変更 */
-    #weather-main { display: flex; align-items: center; justify-content: space-around; margin-bottom: 10px; }
-    #weather-temp { font-size: 3rem; font-weight: 900; color: #fff; }
-    #weather-icon { font-size: 3.5rem; }
-    #hourly-forecast { display: flex; justify-content: space-around; border-top: 1px solid var(--border); padding-top: 15px; font-size: 0.9rem; color: #fff; font-weight: 900; }
     
-    .market-card { flex: 0 0 80px; display: flex; flex-direction: row; justify-content: space-around; align-items: center; border-color: #333; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px;}
+    .news-card { flex: 0 0 auto; height: 140px; cursor: pointer; }
+    .news-src { font-size: var(--fz-sm); color: var(--c-accent); font-weight: 900; }
+    .news-title { 
+      font-size: var(--fz-md); /* Medium */
+      font-weight: 900; line-height: 1.5; color: var(--c-text); 
+      margin-top: 8px; 
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; 
+    }
+    
+    .weather-card { flex: 1; min-height: 0; justify-content: center; }
+    #weather-main { display: flex; align-items: center; justify-content: space-around; margin-bottom: 10px; }
+    #weather-temp { font-size: 3.5rem; font-weight: 900; color: var(--c-text); line-height: 1; } /* ここはインパクト重視で例外またはLGの倍 */
+    #weather-icon { font-size: 3.5rem; }
+    
+    #hourly-forecast { 
+      display: flex; justify-content: space-around; 
+      border-top: 1px solid var(--c-border); 
+      padding-top: 15px; 
+      font-size: var(--fz-sm); /* Small */
+      color: var(--c-text); font-weight: 900; 
+    }
 
-    #auth-btn { background: #333; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 900; cursor: pointer; font-size: 0.7rem; letter-spacing: 0.5px; transition: background 0.2s; }
-    #auth-btn:hover { background: var(--accent); }
+    .market-card { 
+      flex: 0 0 80px; display: flex; flex-direction: row; 
+      justify-content: space-around; align-items: center; 
+      background: var(--c-panel); border: 1px solid var(--c-border); border-radius: 12px; 
+      padding: 10px;
+    }
+    .market-val { font-size: var(--fz-lg); font-weight: 900; display:block; line-height: 1; margin-top: -5px; }
 
-    /* スクロールバー装飾 */
+    #auth-btn { 
+      background: var(--c-panel); border: 1px solid var(--c-border); color: var(--c-text); 
+      padding: 4px 10px; border-radius: 4px; font-weight: 900; cursor: pointer; 
+      font-size: var(--fz-sm); /* Small */
+      transition: all 0.2s; 
+    }
+    #auth-btn:hover { border-color: var(--c-accent); color: var(--c-accent); }
+
+    /* スクロールバー */
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--c-panel); border: 1px solid var(--c-border); border-radius: 10px; }
     
-    /* FullCalendar Overrides */
-    .fc { font-family: 'Inter', sans-serif; --fc-border-color: #222; --fc-today-bg-color: rgba(59,130,246,0.1); }
-    .fc-toolbar-title { font-size: 1.2rem !important; font-weight: 900; letter-spacing: -1px; }
-    .fc-col-header-cell-cushion { color: var(--sub); font-size: 0.8rem; text-decoration: none !
+    /* FullCalendar Override (3サイズ・3色ルールを強制適用) */
+    .fc { font-family: 'Inter', sans-serif; --fc-border-color: var(--c-border); --fc-today-bg-color: rgba(59,130,246,0.1); }
+    .fc-toolbar-title { font-size: var(--fz-lg) !important; font-weight: 900; letter-spacing: -1px; color: var(--c-accent); }
+    .fc-col-header-cell-cushion { color: var(--c-sub); font-size: var(--fz-sm); text-decoration: none !important; }
+    .fc-daygrid-day-number { color: var(--c-text) !important; font-weight: 700; text-decoration: none !important; font-size: var(--fz-sm); padding: 4px 8px !important; }
+    .fc-event { border: none; background: var(--c-accent); font-size: var(--fz-sm); font-weight: 700; padding: 2px 4px; border-radius: 3px; }
+    .fc-day-other .fc-daygrid-day-number { opacity: 0.3; }
+    .fc-view-harness { height: 100% !important; } 
+    .fc-scroller { overflow: hidden !important; }
+  </style>
+</head>
+<body>
+
+<div class="col-left">
+  <div class="clock-area">
+    <div id="date-display">--.-- ---</div>
+    <div class="digital-clock"><span id="h">00</span><span style="color:var(--c-sub)">:</span><span id="m">00</span></div>
+  </div>
+  <div class="card" id="calendar-card">
+    <div id="calendar"></div>
+  </div>
+</div>
+
+<div class="col-center">
+  <div class="card schedule-card">
+    <h3>TODAY'S SCHEDULE</h3>
+    <div class="scroll-area" id="today-events">
+        <div style="color:var(--c-sub); font-size:var(--fz-sm);">Loading...</div>
+    </div>
+  </div>
+  <div class="card todo-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-shrink: 0;">
+      <h3>GOOGLE TO-DO</h3>
+      <button id="auth-btn" onclick="handleAuthClick()">LOGIN</button>
+    </div>
+    <div class="scroll-area" id="todo-list">
+        <div style="color:var(--c-sub); font-size:var(--fz-sm); padding-top:20px;">Login to sync tasks</div>
+    </div>
+  </div>
+</div>
+
+<div class="col-right">
+  <div class="card news-card" id="news-tech">
+    <div class="news-src" id="tech-src">TECH NEWS</div>
+    <div class="news-title" id="tech-title">取得中...</div>
+  </div>
+  <div class="card news-card" id="news-trend">
+    <div class="news-src" id="trend-src">TREND NEWS</div>
+    <div class="news-title" id="trend-title">取得中...</div>
+  </div>
+  <div class="card weather-card">
+    <div id="weather-main"><div id="weather-icon">--</div><div id="weather-temp">--°</div></div>
+    <div id="hourly-forecast"></div>
+  </div>
+  <div class="market-card">
+    <div style="text-align:center;"><h3>NIKKEI</h3><b class="market-val">39,450</b></div>
+    <div style="text-align:center;"><h3>USD/JPY</h3><b class="market-val">149.12</b></div>
+  </div>
+</div>
+
+<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
+<script>
+  const CLIENT_ID = '617076249682-lepri9n545siusvvnrf0cr538s9o5o07.apps.googleusercontent.com';
+  const SCOPES = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks";
+  let tokenClient, cal, currentTaskListId;
+
+  function tick() {
+    const now = new Date();
+    document.getElementById('h').innerText = String(now.getHours()).padStart(2, '0');
+    document.getElementById('m').innerText = String(now.getMinutes()).padStart(2, '0');
+    const w = ["SUN","MON","TUE","WED","THU","FRI","SAT"][now.getDay()];
+    document.getElementById('date-display').innerText = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${w}`;
+  }
+
+  /* --- News --- */
+  const proxyServices = [
+    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`
+  ];
+  async function fetchWithRetry(feed) {
+    for (const getProxy of proxyServices) {
+      try {
+        const res = await fetch(getProxy(feed.url));
+        if (!res.ok) continue;
+        const text = await res.text();
+        const xml = new DOMParser().parseFromString(text, "text/xml");
+        const items = Array.from(xml.querySelectorAll("item")).map(i => ({
+          t: i.querySelector("title")?.textContent || "No Title",
+          l: i.querySelector("link")?.textContent || i.getAttribute("rdf:about") || "#"
+        }));
+        if (items.length > 0) return { name: feed.name, items };
+      } catch (e) {}
+    }
+    return null;
+  }
+  async function initNews() {
+    const techFeeds = [{ name: 'はてなIT', url: 'https://b.hatena.ne.jp/hotentry/it.rss' }, { name: 'ITmedia', url: 'https://rss.itmedia.co.jp/rss/2.0/itmedia_all.xml' }];
+    const trendFeeds = [{ name: 'NHKニュース', url: 'https://www.nhk.or.jp/rss/news/cat0.xml' }, { name: 'ねとらぼ', url: 'https://news.yahoo.co.jp/rss/media/it_nlab/all.xml' }];
+    const startCycle = async (feeds, titleId, srcId, cardId) => {
+      let pool = [];
+      for (let f of feeds) {
+        const res = await fetchWithRetry(f);
+        if (res) res.items.forEach(i => pool.push({ t: i.t, l: i.l, s: res.name }));
+      }
+      let idx = 0;
+      const rotate = () => {
+        if (!pool.length) return;
+        document.getElementById(titleId).innerText = pool[idx].t;
+        document.getElementById(srcId).innerText = "SOURCE: " + pool[idx].s;
+        document.getElementById(cardId).onclick = () => window.open(pool[idx].l, '_blank');
+        idx = (idx + 1) % pool.length;
+      };
+      if (pool.length) { rotate(); setInterval(rotate, 12000); }
+    };
+    startCycle(techFeeds, 'tech-title', 'tech-src', 'news-tech');
+    startCycle(trendFeeds, 'trend-title', 'trend-src', 'news-trend');
+  }
+
+  /* --- Weather --- */
+  async function initWeather() {
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&hourly=temperature_2m,weathercode&current_weather=true&timezone=Asia%2FTokyo`);
+      const d = await res.json();
+      const icons = { 0:"☀️", 1:"🌤", 2:"☁️", 3:"☁️", 61:"☔️", 63:"☔️", 80:"☔️", 95:"⚡️" };
+      document.getElementById('weather-icon').innerText = icons[d.current_weather.weathercode] || "☁️";
+      document.getElementById('weather-temp').innerText = Math.round(d.current_weather.temperature) + "°";
+      let h = "";
+      for(let i=3; i<=9; i+=3) h += `<div style="text-align:center">${d.hourly.time[i].slice(11,16)}<br>${icons[d.hourly.weathercode[i]]||"☁️"}${Math.round(d.hourly.temperature_2m[i])}°</div>`;
+      document.getElementById('hourly-forecast').innerHTML = h;
+    });
+  }
+
+  /* --- Google API --- */
+  function gapiLoaded() { gapi.load('client', async () => { await gapi.client.init({ discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest", "https://www.googleapis.com/discovery/v1/apis/tasks/v1/rest"] }); }); }
+  function gisLoaded() {
+    tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: (resp) => { if (resp.access_token) { localStorage.setItem('g_token', resp.access_token); loadData(); } } });
+    const saved = localStorage.getItem('g_token');
+    if (saved) { gapi.client.setToken({access_token: saved}); loadData(); }
+  }
+  function handleAuthClick() { tokenClient.requestAccessToken({prompt: 'consent'}); }
+
+  async function loadData() {
+    document.getElementById('auth-btn').style.display = 'none';
+    try {
+      const res = await gapi.client.calendar.events.list({ calendarId: 'primary', timeMin: new Date().toISOString(), singleEvents: true, orderBy: 'startTime', maxResults: 50 });
+      const events = res.result.items.map(e => ({ title: e.summary, start: e.start.dateTime || e.start.date }));
+      cal.removeAllEvents(); 
+      cal.addEventSource(events);
+      const todayStr = new Date().toLocaleDateString('en-CA');
+      const todayEvents = events.filter(e => e.start.startsWith(todayStr));
+      document.getElementById('today-events').innerHTML = todayEvents.map(e => {
+        const time = e.start.includes('T') ? e.start.slice(11,16) : 'ALL';
+        return `<div class="item"><div class="item-time">${time}</div><div>${e.title}</div></div>`;
+      }).join('') || '<div style="color:var(--c-sub); font-size:var(--fz-sm); padding-top:10px;">No events today</div>';
+    } catch(e) { if(e.status === 401) localStorage.removeItem('g_token'); }
+
+    try {
+      const taskListRes = await gapi.client.tasks.tasklists.list();
+      if (taskListRes.result.items) {
+        currentTaskListId = taskListRes.result.items[0].id;
+        const tasks = await gapi.client.tasks.tasks.list({ tasklist: currentTaskListId, showCompleted: false });
+        document.getElementById('todo-list').innerHTML = (tasks.result.items || []).map(t => `<div class="item"><div class="todo-check" onclick="completeTask('${t.id}')"></div><div>${t.title}</div></div>`).join('');
+      }
+    } catch(e) {}
+  }
+
+  async function completeTask(taskId) {
+    const btn = event.target;
+    btn.style.background = 'var(--c-accent)';
+    setTimeout(async () => {
+        await gapi.client.tasks.tasks.patch({ tasklist: currentTaskListId, task: taskId, resource: { status: 'completed' } });
+        loadData();
+    }, 300);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    cal = new FullCalendar.Calendar(document.getElementById('calendar'), { 
+      initialView: 'dayGridMonth', locale: 'ja', height: '100%', expandRows: true,
+      headerToolbar: { left: '', center: 'title', right: '' }, 
+      dayCellContent: (e) => e.dayNumberText.replace('日', ''),
+      windowResizeDelay: 100
+    });
+    cal.render(); 
+    tick(); setInterval(tick, 1000); initNews(); initWeather();
+  });
+</script>
+</body>
+</html>
