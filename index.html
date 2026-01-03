@@ -1,310 +1,359 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Minimalist Flip Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minimalist Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&display=swap');
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&display=swap');
 
-/* ========= Color System ========= */
-:root{
-  --bg:#0b0f14;
-  --panel:#111827;
-  --panel2:#0f1623;
-  --text:#e5e7eb;
-  --sub:#9ca3af;
-  --border:rgba(255,255,255,.06);
-  --accent:#3b82f6;
-}
+    :root{
+      --bg:#0b0f14;
+      --panel:#111827;
+      --panel2:#0f1623;
+      --text:#e5e7eb;
+      --sub:#9ca3af;
+      --border:rgba(255,255,255,.06);
+      --accent:#3b82f6;
+    }
 
-/* ========= Base ========= */
-*{box-sizing:border-box}
-body{
-  margin:0;
-  padding:20px;
-  height:100vh;
-  background:var(--bg);
-  color:var(--text);
-  font-family:'Inter',system-ui,sans-serif;
-  display:grid;
-  grid-template-columns:4fr 3fr 3fr;
-  gap:20px;
-  overflow:hidden;
-}
+    *{ box-sizing:border-box; }
 
-/* ========= Card ========= */
-.card{
-  background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 60%),var(--panel);
-  border-radius:14px;
-  border:1px solid var(--border);
-  padding:18px;
-  display:flex;
-  flex-direction:column;
-  box-shadow:0 12px 30px rgba(0,0,0,.35);
-}
+    body{
+      margin:0;
+      padding:20px;
+      height:100vh;
+      overflow:hidden;
+      background:
+        radial-gradient(1200px 600px at 20% 10%, rgba(59,130,246,0.08), transparent 55%),
+        radial-gradient(900px 500px at 80% 20%, rgba(255,255,255,0.04), transparent 55%),
+        var(--bg);
+      color:var(--text);
+      font-family:'Inter',system-ui,-apple-system,"Segoe UI",sans-serif;
+      display:grid;
+      grid-template-columns: 4fr 3fr 3fr;
+      gap:20px;
+    }
 
-/* ========= Left Header (Date) ========= */
-.date-header{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-bottom:10px;
-}
-.date-dot{
-  width:8px;height:8px;border-radius:50%;
-  background:var(--accent);
-}
-#date{
-  font-size:1.35rem;
-  font-weight:900;
-}
-#date-sub{
-  font-size:.8rem;
-  color:var(--sub);
-  letter-spacing:.15em;
-}
+    .sync-container{
+      display:flex;
+      flex-direction:column;
+      height:100%;
+      min-height:0; /* スクロール崩れ防止 */
+      gap:20px;
+    }
 
-/* ========= Flip Clock ========= */
-.flip-clock{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-bottom:14px;
-}
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 60%),var(--panel);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 12px 30px rgba(0,0,0,.35);
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
 
-.flip-unit{
-  width:92px;height:128px;
-  background:#0b1220;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:12px;
-  font-size:8.2rem;
-  font-weight:900;
-  text-align:center;
-  line-height:128px;
-}
+    /* 右カラムはさらに静かに */
+    .right .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.02),transparent 60%),var(--panel2);
+      border-color:rgba(255,255,255,.05);
+    }
 
-.leaf{animation:flip .55s ease}
-@keyframes flip{
-  0%{transform:rotateX(0)}
-  50%{transform:rotateX(-90deg);opacity:.5}
-  100%{transform:rotateX(0)}
-}
+    /* 見出し */
+    h3{
+      margin:0;
+      font-size:.75rem;
+      letter-spacing:.15em;
+      font-weight:900;
+      color:var(--sub);
+    }
 
-.colon{
-  font-size:3.8rem;
-  opacity:.6;
-  padding-bottom:6px;
-}
+    /* ===== 日付ヘッダー ===== */
+    .date-header{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:8px;
+      padding-left:2px;
+    }
+    .date-dot{
+      width:8px;height:8px;border-radius:999px;
+      background:var(--accent);
+      opacity:.95;
+      transform:translateY(-1px);
+    }
+    #date{
+      font-size:1.35rem;
+      font-weight:900;
+      letter-spacing:.02em;
+      white-space:nowrap;
+    }
+    #date-sub{
+      font-size:.8rem;
+      font-weight:900;
+      color:var(--sub);
+      letter-spacing:.15em;
+      white-space:nowrap;
+    }
 
-/* 秒は「添え物」 */
-#s1,#s2{
-  width:64px;height:92px;
-  line-height:92px;
-  font-size:5.4rem;
-  opacity:.85;
-}
-.flip-clock .colon:last-of-type{
-  opacity:.45;
-  transform:translateY(2px);
-}
+    /* ===== 時刻（秒なし・大きく） ===== */
+    .clock-wrap{ margin-bottom:6px; }
 
-/* ========= Layout ========= */
-.sync-container{
-  display:flex;
-  flex-direction:column;
-  height:100%;
-  min-height:0;
-}
+    .flip-clock{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
 
-/* ========= Calendar ========= */
-#calendar{height:100%}
-.fc-theme-standard td,
-.fc-theme-standard th{
-  border:1px solid var(--border)!important;
-}
-.fc-daygrid-day-number{
-  color:var(--sub)!important;
-  font-weight:700;
-}
+    /* 時・分を大きく */
+    .flip-unit{
+      width:140px;
+      height:170px;
+      border-radius:18px;
+      background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 60%), #0b1220;
+      border:1px solid rgba(255,255,255,.08);
+      font-size:11rem;
+      font-weight:900;
+      text-align:center;
+      line-height:170px;
+      color:var(--text);
+    }
 
-/* ========= Headings ========= */
-h3{
-  margin:0;
-  font-size:.75rem;
-  color:var(--sub);
-  letter-spacing:.15em;
-  font-weight:900;
-}
+    .colon{
+      font-size:5.2rem;
+      font-weight:900;
+      opacity:.55;
+      padding-bottom:10px;
+    }
 
-/* ========= Todo ========= */
-.todo-list{
-  margin-top:12px;
-  overflow-y:auto;
-}
-.todo-item{
-  display:flex;
-  gap:12px;
-  padding:12px 0;
-  border-bottom:1px solid var(--border);
-}
-.todo-item::before{
-  content:"";
-  width:8px;height:8px;
-  background:var(--sub);
-  border-radius:3px;
-  margin-top:6px;
-}
+    .leaf{
+      animation:flip .55s ease;
+      transform-origin:bottom;
+    }
+    @keyframes flip{
+      0%{transform:rotateX(0)}
+      50%{transform:rotateX(-90deg);opacity:.55}
+      100%{transform:rotateX(0)}
+    }
 
-/* ========= Button ========= */
-#auth-btn{
-  background:rgba(255,255,255,.06);
-  color:var(--text);
-  border:1px solid var(--border);
-  padding:6px 10px;
-  border-radius:10px;
-  font-size:.7rem;
-  font-weight:900;
-  letter-spacing:.1em;
-  cursor:pointer;
-}
+    /* ===== カレンダー ===== */
+    #calendar{ height:100%; }
+    .fc-theme-standard td, .fc-theme-standard th{
+      border:1px solid rgba(255,255,255,.06)!important;
+    }
+    .fc-daygrid-day-number{
+      color:rgba(156,163,175,.9)!important;
+      font-weight:800;
+      text-decoration:none!important;
+    }
+    .fc .fc-toolbar-title{
+      font-weight:900;
+      letter-spacing:.02em;
+    }
+    .fc .fc-button{
+      background:rgba(255,255,255,.06)!important;
+      border:1px solid rgba(255,255,255,.08)!important;
+      color:var(--text)!important;
+      border-radius:12px!important;
+      padding:6px 10px!important;
+      font-weight:900!important;
+    }
 
-/* ========= Right Column (Quiet) ========= */
-.sync-container:last-child .card{
-  background:linear-gradient(180deg,rgba(255,255,255,.02),transparent 60%),var(--panel2);
-  border-color:rgba(255,255,255,.05);
-}
+    /* ===== 今日の予定 ===== */
+    .today-events{
+      gap:10px;
+    }
+    .events-list{
+      margin-top:10px;
+      overflow:auto;
+      padding-right:6px;
+    }
+    .event-item{
+      display:flex;
+      gap:10px;
+      padding:10px 0;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      align-items:flex-start;
+    }
+    .event-time{
+      flex:0 0 auto;
+      font-weight:900;
+      color:rgba(229,231,235,.9);
+      min-width:64px;
+    }
+    .event-title{
+      font-weight:800;
+      color:var(--text);
+      line-height:1.4;
+    }
+    .event-meta{
+      font-size:.82rem;
+      color:var(--sub);
+      margin-top:2px;
+      line-height:1.3;
+    }
+    .event-dot{
+      width:8px;height:8px;border-radius:999px;
+      background:rgba(59,130,246,.8);
+      margin-top:6px;
+      flex:0 0 auto;
+    }
+    .empty{
+      margin-top:10px;
+      color:var(--sub);
+      font-weight:800;
+      letter-spacing:.02em;
+    }
 
-/* Weather */
-#weather-icon{font-size:4rem;opacity:.9}
-#weather-temp{font-size:2.8rem;font-weight:900}
+    /* ===== ToDo（ある分だけ全部） ===== */
+    .todo-section{ flex:1; min-height:0; }
+    .todo-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    #auth-btn{
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.08);
+      padding:7px 10px;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:.7rem;
+      font-weight:900;
+      letter-spacing:.1em;
+    }
 
-/* KPI */
-.mini-kpi{
-  flex-direction:row;
-  justify-content:space-around;
-  align-items:center;
-}
-.mini-kpi b{font-size:1.25rem}
-.mini-kpi .label{
-  font-size:.7rem;
-  color:var(--sub);
-  letter-spacing:.15em;
-}
+    .todo-list{
+      margin-top:10px;
+      overflow:auto; /* ある分だけ全部表示（溢れたらスクロール） */
+      padding-right:6px;
+    }
+    .todo-item{
+      display:flex;
+      gap:12px;
+      padding:12px 0;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      font-weight:800;
+      line-height:1.4;
+    }
+    .todo-item::before{
+      content:"";
+      width:8px;height:8px;
+      border-radius:3px;
+      background:rgba(156,163,175,.7);
+      margin-top:7px;
+      flex:0 0 auto;
+    }
 
-/* Scrollbar */
-::-webkit-scrollbar{width:8px}
-::-webkit-scrollbar-thumb{
-  background:rgba(255,255,255,.12);
-  border-radius:999px;
-}
-</style>
+    /* ===== 右：ニュース（高さ揃え） ===== */
+    .news-card{
+      height:180px;              /* 固定で揃える */
+      justify-content:flex-start; /* 上揃え */
+    }
+    .news-title{
+      margin-top:10px;
+      font-size:1.05rem;
+      font-weight:900;
+      line-height:1.55;
+      display:-webkit-box;
+      -webkit-line-clamp:4;      /* 長い時も上品に */
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+
+    /* ===== 右：天気 ===== */
+    .weather-card{
+      flex:1;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+    #weather-icon{ font-size:4.2rem; opacity:.95; }
+    #weather-temp{ font-size:3.0rem; font-weight:900; }
+    #hourly-forecast{
+      display:flex;
+      gap:16px;
+      margin-top:16px;
+      color:var(--sub);
+      font-size:.82rem;
+    }
+
+    /* ===== 右：KPI ===== */
+    .mini-kpi{
+      height:110px;
+      flex-direction:row;
+      justify-content:space-around;
+      align-items:center;
+    }
+    .mini-kpi .label{
+      font-size:.7rem;
+      color:var(--sub);
+      font-weight:900;
+      letter-spacing:.15em;
+      margin-bottom:6px;
+      text-align:center;
+    }
+    .mini-kpi b{
+      display:block;
+      font-size:1.25rem;
+      font-weight:900;
+      text-align:center;
+      opacity:.95;
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar{ width:9px; }
+    ::-webkit-scrollbar-thumb{
+      background:rgba(255,255,255,.12);
+      border-radius:999px;
+    }
+    ::-webkit-scrollbar-track{ background:transparent; }
+  </style>
 </head>
 
 <body>
 
-<!-- LEFT -->
-<div class="sync-container">
-  <div class="date-header">
-    <span class="date-dot"></span>
-    <div id="date">0000/00/00（日）</div>
-    <div id="date-sub">今日</div>
-  </div>
+  <!-- LEFT: Date + Big Clock (no seconds) + Calendar -->
+  <div class="sync-container">
 
-  <div class="flip-clock">
-    <div class="flip-unit" id="h1">0</div>
-    <div class="flip-unit" id="h2">0</div>
-    <div class="colon">:</div>
-    <div class="flip-unit" id="m1">0</div>
-    <div class="flip-unit" id="m2">0</div>
-    <div class="colon">:</div>
-    <div class="flip-unit" id="s1">0</div>
-    <div class="flip-unit" id="s2">0</div>
-  </div>
+    <div class="clock-wrap">
+      <div class="date-header">
+        <span class="date-dot"></span>
+        <div id="date">0000/00/00（日）</div>
+        <div id="date-sub">今日</div>
+      </div>
 
-  <div class="card" style="flex-grow:1">
-    <div id="calendar"></div>
-  </div>
-</div>
-
-<!-- CENTER -->
-<div class="sync-container" style="padding-top:44px">
-  <div class="card" style="flex-grow:1">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h3>やること</h3>
-      <button id="auth-btn">ログイン</button>
+      <div class="flip-clock">
+        <div class="flip-unit" id="h1">0</div><div class="flip-unit" id="h2">0</div>
+        <div class="colon">:</div>
+        <div class="flip-unit" id="m1">0</div><div class="flip-unit" id="m2">0</div>
+      </div>
     </div>
-    <div class="todo-list">
-      <div class="todo-item">ショート動画 3本</div>
-      <div class="todo-item">MV制作</div>
-      <div class="todo-item">Etsyデザイン</div>
+
+    <div class="card" style="flex:1;">
+      <div id="calendar"></div>
     </div>
-  </div>
-</div>
 
-<!-- RIGHT -->
-<div class="sync-container">
-  <div class="card" style="height:150px;justify-content:center">
-    <h3>ニュース</h3>
-    <div style="font-weight:900;margin-top:8px">読み込み中…</div>
   </div>
 
-  <div class="card" style="flex-grow:1;align-items:center;justify-content:center;margin:20px 0">
-    <h3>現在の天気</h3>
-    <div id="weather-icon">☀️</div>
-    <div id="weather-temp">3°C</div>
-  </div>
+  <!-- CENTER: Today's events + Todo (show all) -->
+  <div class="sync-container">
 
-  <div class="card mini-kpi" style="height:100px">
-    <div>
-      <div class="label">日経平均</div>
-      <b>39,450</b>
+    <div class="card today-events" style="height:260px;">
+      <h3>今日の予定</h3>
+      <div id="today-events-body" class="events-list">
+        <div class="empty">読み込み中…</div>
+      </div>
     </div>
-    <div>
-      <div class="label">ドル円</div>
-      <b>149.12</b>
-    </div>
-  </div>
-</div>
 
-<script>
-function updateFlip(id,val){
-  const el=document.getElementById(id)
-  if(el.textContent!==val){
-    el.textContent=val
-    el.classList.remove('leaf')
-    void el.offsetWidth
-    el.classList.add('leaf')
-  }
-}
-
-function formatDate(d){
-  const w="日月火水木金土"[d.getDay()]
-  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}（${w}）`
-}
-
-function tick(){
-  const d=new Date()
-  const h=String(d.getHours()).padStart(2,'0')
-  const m=String(d.getMinutes()).padStart(2,'0')
-  const s=String(d.getSeconds()).padStart(2,'0')
-  updateFlip('h1',h[0]);updateFlip('h2',h[1])
-  updateFlip('m1',m[0]);updateFlip('m2',m[1])
-  updateFlip('s1',s[0]);updateFlip('s2',s[1])
-  document.getElementById('date').textContent=formatDate(d)
-}
-
-document.addEventListener('DOMContentLoaded',()=>{
-  new FullCalendar.Calendar(calendar,{
-    initialView:'dayGridMonth',
-    locale:'ja',
-    height:'100%'
-  }).render()
-  tick()
-  setInterval(tick,1000)
-})
-</script>
-</body>
-</html>
+    <div class="card todo-section">
+      <div class="todo-head">
+        <h3>やること</h3>
+        <button id="auth-btn" onclick="handleAuthClick()">ログイン</button>
+      </div>
+      <div class="todo-list" id="todo-body">
+        <!-- ある分だけここに追加される想
