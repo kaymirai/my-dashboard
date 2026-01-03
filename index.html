@@ -41,7 +41,7 @@
       display:flex;
       flex-direction:column;
       height:100%;
-      min-height:0; /* スクロール崩れ防止 */
+      min-height:0;
       gap:20px;
     }
 
@@ -56,19 +56,18 @@
       min-height:0;
     }
 
-    /* 右カラムはさらに静かに */
     .right .card{
       background:linear-gradient(180deg,rgba(255,255,255,.02),transparent 60%),var(--panel2);
       border-color:rgba(255,255,255,.05);
     }
 
-    /* 見出し */
     h3{
       margin:0;
       font-size:.75rem;
       letter-spacing:.15em;
       font-weight:900;
       color:var(--sub);
+      text-transform: uppercase;
     }
 
     /* ===== 日付ヘッダー ===== */
@@ -83,463 +82,260 @@
       width:8px;height:8px;border-radius:999px;
       background:var(--accent);
       opacity:.95;
-      transform:translateY(-1px);
     }
-    #date{
-      font-size:1.35rem;
-      font-weight:900;
-      letter-spacing:.02em;
-      white-space:nowrap;
-    }
-    #date-sub{
-      font-size:.8rem;
-      font-weight:900;
-      color:var(--sub);
-      letter-spacing:.15em;
-      white-space:nowrap;
-    }
+    #date{ font-size:1.35rem; font-weight:900; letter-spacing:.02em; }
+    #date-sub{ font-size:.8rem; font-weight:900; color:var(--sub); letter-spacing:.15em; }
 
-    /* ===== 時刻（秒なし・大きく） ===== */
+    /* ===== パタパタ時刻 (Flip Clock) ===== */
     .clock-wrap{ margin-bottom:6px; }
-
-    .flip-clock{
-      display:flex;
-      align-items:center;
-      gap:14px;
-    }
-
-    /* 時・分を大きく */
+    .flip-clock{ display:flex; align-items:center; gap:14px; }
+    
     .flip-unit{
+      position: relative;
       width:140px;
       height:170px;
       border-radius:18px;
-      background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 60%), #0b1220;
+      background:#0b1220;
       border:1px solid rgba(255,255,255,.08);
       font-size:11rem;
       font-weight:900;
       text-align:center;
       line-height:170px;
       color:var(--text);
+      perspective: 400px;
     }
 
-    .colon{
-      font-size:5.2rem;
-      font-weight:900;
-      opacity:.55;
-      padding-bottom:10px;
+    /* 中央の仕切り線 */
+    .flip-unit::after {
+      content: "";
+      position: absolute;
+      top: 50%; left: 0; width: 100%; height: 1px;
+      background: rgba(0,0,0,0.5);
+      z-index: 5;
     }
 
-    .leaf{
-      animation:flip .55s ease;
-      transform-origin:bottom;
-    }
-    @keyframes flip{
-      0%{transform:rotateX(0)}
-      50%{transform:rotateX(-90deg);opacity:.55}
-      100%{transform:rotateX(0)}
+    .colon{ font-size:5.2rem; font-weight:900; opacity:.55; padding-bottom:10px; }
+
+    /* より立体的なパタパタアニメーション */
+    .leaf {
+      animation: flipDown 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: 50% 50%;
     }
 
-    /* ===== カレンダー ===== */
+    @keyframes flipDown {
+      0% { transform: rotateX(0deg); }
+      50% { transform: rotateX(-90deg); opacity: 0.5; }
+      100% { transform: rotateX(0deg); }
+    }
+
+    /* ===== カレンダー & 予定 ===== */
     #calendar{ height:100%; }
-    .fc-theme-standard td, .fc-theme-standard th{
-      border:1px solid rgba(255,255,255,.06)!important;
-    }
-    .fc-daygrid-day-number{
-      color:rgba(156,163,175,.9)!important;
-      font-weight:800;
-      text-decoration:none!important;
-    }
-    .fc .fc-toolbar-title{
-      font-weight:900;
-      letter-spacing:.02em;
-    }
-    .fc .fc-button{
-      background:rgba(255,255,255,.06)!important;
-      border:1px solid rgba(255,255,255,.08)!important;
-      color:var(--text)!important;
-      border-radius:12px!important;
-      padding:6px 10px!important;
-      font-weight:900!important;
-    }
+    .fc-theme-standard td, .fc-theme-standard th{ border:1px solid rgba(255,255,255,.06)!important; }
+    .fc-daygrid-day-number{ color:rgba(156,163,175,.9)!important; font-weight:800; text-decoration:none!important; }
+    .fc .fc-toolbar-title{ font-weight:900; letter-spacing:.02em; }
+    .fc .fc-button{ background:rgba(255,255,255,.06)!important; border:1px solid rgba(255,255,255,.08)!important; color:var(--text)!important; border-radius:12px!important; padding:6px 10px!important; font-weight:900!important; }
 
-    /* ===== 今日の予定 ===== */
-    .today-events{
-      gap:10px;
-    }
-    .events-list{
-      margin-top:10px;
-      overflow:auto;
-      padding-right:6px;
-    }
-    .event-item{
-      display:flex;
-      gap:10px;
-      padding:10px 0;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      align-items:flex-start;
-    }
-    .event-time{
-      flex:0 0 auto;
-      font-weight:900;
-      color:rgba(229,231,235,.9);
-      min-width:64px;
-    }
-    .event-title{
-      font-weight:800;
-      color:var(--text);
-      line-height:1.4;
-    }
-    .event-meta{
-      font-size:.82rem;
-      color:var(--sub);
-      margin-top:2px;
-      line-height:1.3;
-    }
-    .event-dot{
-      width:8px;height:8px;border-radius:999px;
-      background:rgba(59,130,246,.8);
-      margin-top:6px;
-      flex:0 0 auto;
-    }
-    .empty{
-      margin-top:10px;
-      color:var(--sub);
-      font-weight:800;
-      letter-spacing:.02em;
-    }
+    .events-list{ margin-top:10px; overflow:auto; padding-right:6px; }
+    .event-item{ display:flex; gap:10px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06); align-items:flex-start; }
+    .event-time{ flex:0 0 auto; font-weight:900; color:rgba(229,231,235,.9); min-width:64px; }
+    .event-title{ font-weight:800; color:var(--text); line-height:1.4; }
+    .event-dot{ width:8px; height:8px; border-radius:999px; background:var(--accent); margin-top:6px; flex:0 0 auto; }
+    .empty{ margin-top:10px; color:var(--sub); font-weight:800; }
 
-    /* ===== ToDo（ある分だけ全部） ===== */
+    /* ===== ToDo ===== */
     .todo-section{ flex:1; min-height:0; }
-    .todo-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-    #auth-btn{
-      background:rgba(255,255,255,.06);
-      color:var(--text);
-      border:1px solid rgba(255,255,255,.08);
-      padding:7px 10px;
-      border-radius:12px;
-      cursor:pointer;
-      font-size:.7rem;
-      font-weight:900;
-      letter-spacing:.1em;
-    }
+    .todo-head{ display:flex; justify-content:space-between; align-items:center; }
+    #auth-btn{ background:var(--accent); color:white; border:none; padding:7px 14px; border-radius:12px; cursor:pointer; font-size:.7rem; font-weight:900; letter-spacing:.1em; }
+    .todo-list{ margin-top:10px; overflow:auto; padding-right:6px; }
+    .todo-item{ display:flex; gap:12px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,.06); font-weight:800; line-height:1.4; }
+    .todo-item::before{ content:""; width:8px; height:8px; border-radius:3px; background:rgba(156,163,175,.7); margin-top:7px; flex:0 0 auto; }
 
-    .todo-list{
-      margin-top:10px;
-      overflow:auto; /* ある分だけ全部表示（溢れたらスクロール） */
-      padding-right:6px;
-    }
-    .todo-item{
-      display:flex;
-      gap:12px;
-      padding:12px 0;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      font-weight:800;
-      line-height:1.4;
-    }
-    .todo-item::before{
-      content:"";
-      width:8px;height:8px;
-      border-radius:3px;
-      background:rgba(156,163,175,.7);
-      margin-top:7px;
-      flex:0 0 auto;
-    }
-
-    /* ===== 右：ニュース（高さ揃え） ===== */
-    .news-card{
-      height:180px;              /* 固定で揃える */
-      justify-content:flex-start; /* 上揃え */
-    }
-    .news-title{
-      margin-top:10px;
-      font-size:1.05rem;
-      font-weight:900;
-      line-height:1.55;
-      display:-webkit-box;
-      -webkit-line-clamp:4;      /* 長い時も上品に */
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-    }
-
-    /* ===== 右：天気 ===== */
-    .weather-card{
-      flex:1;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-    }
-    #weather-icon{ font-size:4.2rem; opacity:.95; }
+    /* ===== ニュース & 天気 ===== */
+    .news-card{ height:180px; justify-content:flex-start; cursor: pointer; transition: 0.2s; }
+    .news-card:hover { border-color: var(--accent); }
+    .news-title{ margin-top:10px; font-size:1.05rem; font-weight:900; line-height:1.55; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+    
+    .weather-card{ flex:1; align-items:center; justify-content:center; gap:8px; }
+    #weather-icon{ font-size:4.2rem; }
     #weather-temp{ font-size:3.0rem; font-weight:900; }
-    #hourly-forecast{
-      display:flex;
-      gap:16px;
-      margin-top:16px;
-      color:var(--sub);
-      font-size:.82rem;
-    }
+    #hourly-forecast{ display:flex; gap:16px; margin-top:16px; color:var(--sub); font-size:.82rem; }
 
-    /* ===== 右：KPI ===== */
-    .mini-kpi{
-      height:110px;
-      flex-direction:row;
-      justify-content:space-around;
-      align-items:center;
-    }
-    .mini-kpi .label{
-      font-size:.7rem;
-      color:var(--sub);
-      font-weight:900;
-      letter-spacing:.15em;
-      margin-bottom:6px;
-      text-align:center;
-    }
-    .mini-kpi b{
-      display:block;
-      font-size:1.25rem;
-      font-weight:900;
-      text-align:center;
-      opacity:.95;
-    }
+    .mini-kpi{ height:110px; flex-direction:row; justify-content:space-around; align-items:center; }
+    .mini-kpi .label{ font-size:.7rem; color:var(--sub); font-weight:900; margin-bottom:6px; text-align:center; }
+    .mini-kpi b{ display:block; font-size:1.25rem; font-weight:900; text-align:center; }
 
-    /* scrollbar */
-    ::-webkit-scrollbar{ width:9px; }
-    ::-webkit-scrollbar-thumb{
-      background:rgba(255,255,255,.12);
-      border-radius:999px;
-    }
-    ::-webkit-scrollbar-track{ background:transparent; }
+    ::-webkit-scrollbar{ width:6px; }
+    ::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.12); border-radius:999px; }
   </style>
 </head>
 
 <body>
 
-  <!-- LEFT: Date + Big Clock (no seconds) + Calendar -->
   <div class="sync-container">
-
     <div class="clock-wrap">
       <div class="date-header">
         <span class="date-dot"></span>
         <div id="date">0000/00/00（日）</div>
         <div id="date-sub">今日</div>
       </div>
-
       <div class="flip-clock">
         <div class="flip-unit" id="h1">0</div><div class="flip-unit" id="h2">0</div>
         <div class="colon">:</div>
         <div class="flip-unit" id="m1">0</div><div class="flip-unit" id="m2">0</div>
       </div>
     </div>
-
     <div class="card" style="flex:1;">
       <div id="calendar"></div>
     </div>
-
   </div>
 
-  <!-- CENTER: Today's events + Todo (show all) -->
   <div class="sync-container">
-
     <div class="card today-events" style="height:260px;">
       <h3>今日の予定</h3>
       <div id="today-events-body" class="events-list">
-        <div class="empty">読み込み中…</div>
+        <div class="empty">ログインして同期してください</div>
       </div>
     </div>
-
     <div class="card todo-section">
       <div class="todo-head">
         <h3>やること</h3>
-        <button id="auth-btn" onclick="handleAuthClick()">ログイン</button>
+        <button id="auth-btn" onclick="handleAuthClick()">Google ログイン</button>
       </div>
       <div class="todo-list" id="todo-body">
-        <!-- ある分だけここに追加される想定（スクロールで全部見れる） -->
-        <div class="todo-item">ショート動画 3本</div>
-        <div class="todo-item">MV制作</div>
-        <div class="todo-item">Etsyデザイン</div>
+        <div class="todo-item" style="color:var(--sub)">タスクがありません</div>
       </div>
     </div>
-
   </div>
 
-  <!-- RIGHT -->
   <div class="sync-container right">
-
-    <div class="card news-card">
-      <h3 id="news-source">ニュース</h3>
+    <div class="card news-card" id="news-container">
+      <h3 id="news-source">NEWS</h3>
       <div id="news-title" class="news-title">読み込み中…</div>
     </div>
-
     <div class="card weather-card">
-      <h3 id="location-name">現在の天気</h3>
+      <h3 id="location-name">CURRENT WEATHER</h3>
       <div id="weather-icon">--</div>
       <div id="weather-temp">--°C</div>
       <div id="hourly-forecast"></div>
     </div>
-
     <div class="card mini-kpi">
-      <div>
-        <div class="label">日経平均</div>
-        <b>39,450</b>
-      </div>
-      <div>
-        <div class="label">ドル円</div>
-        <b>149.12</b>
-      </div>
+      <div><div class="label">日経平均</div><b>39,450</b></div>
+      <div><div class="label">ドル円</div><b>149.12</b></div>
     </div>
-
   </div>
 
+<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
 <script>
-  // ===== Flip update =====
+  // ===== Google API Config =====
+  const CLIENT_ID = '617076249682-lepri9n545siusvvnrf0cr538s9o5o07.apps.googleusercontent.com';
+  const SCOPES = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks.readonly";
+  let tokenClient, cal;
+
+  // ===== Flip Clock Logic =====
   function updateFlip(id, val) {
     const el = document.getElementById(id);
     if (el.textContent !== val) {
       el.textContent = val;
       el.classList.remove('leaf');
-      void el.offsetWidth;
+      void el.offsetWidth; // Reflow
       el.classList.add('leaf');
     }
   }
 
-  // YYYY/MM/DD（曜）
-  function formatJaDate(now){
-    const y = now.getFullYear();
-    const mo = String(now.getMonth()+1).padStart(2,'0');
-    const d = String(now.getDate()).padStart(2,'0');
-    const w = ["日","月","火","水","木","金","土"][now.getDay()];
-    return `${y}/${mo}/${d}（${w}）`;
-  }
-
-  // 秒なし tick
   function tick(){
     const now = new Date();
     const h = String(now.getHours()).padStart(2,'0');
     const m = String(now.getMinutes()).padStart(2,'0');
-
     updateFlip('h1', h[0]); updateFlip('h2', h[1]);
     updateFlip('m1', m[0]); updateFlip('m2', m[1]);
-
-    document.getElementById('date').textContent = formatJaDate(now);
-    document.getElementById('date-sub').textContent = "今日";
+    const w = ["日","月","火","水","木","金","土"][now.getDay()];
+    document.getElementById('date').textContent = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}（${w}）`;
   }
 
-  // ===== 今日の予定：FullCalendarのイベントから抽出して表示 =====
-  function sameDay(a, b){
-    return a.getFullYear() === b.getFullYear()
-      && a.getMonth() === b.getMonth()
-      && a.getDate() === b.getDate();
+  // ===== Google Auth & Data Load =====
+  function gapiLoaded() { gapi.load('client', async () => { await gapi.client.init({ discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest", "https://www.googleapis.com/discovery/v1/apis/tasks/v1/rest"] }); }); }
+  function gisLoaded() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID, scope: SCOPES,
+      callback: (resp) => { if (resp.access_token) { localStorage.setItem('g_token', resp.access_token); loadData(); } }
+    });
+    const saved = localStorage.getItem('g_token');
+    if (saved) { gapi.client.setToken({access_token: saved}); loadData(); }
+  }
+  function handleAuthClick() { tokenClient.requestAccessToken({prompt: 'consent'}); }
+
+  async function loadData() {
+    document.getElementById('auth-btn').style.display = 'none';
+    // Calendar
+    const res = await gapi.client.calendar.events.list({ calendarId: 'primary', timeMin: new Date().toISOString(), singleEvents: true, orderBy: 'startTime' });
+    const events = res.result.items.map(e => ({ title: e.summary, start: e.start.dateTime || e.start.date, end: e.end.dateTime || e.end.date }));
+    cal.removeAllEventSources();
+    cal.addEventSource(events);
+    renderTodayEvents(cal);
+
+    // Tasks
+    const taskRes = await gapi.client.tasks.tasklists.list();
+    if (taskRes.result.items) {
+      const tasks = await gapi.client.tasks.tasks.list({ tasklist: taskRes.result.items[0].id });
+      document.getElementById('todo-body').innerHTML = (tasks.result.items || []).filter(t => t.status !== 'completed').map(t => `<div class="todo-item">${t.title}</div>`).join('');
+    }
   }
 
-  function pad2(n){ return String(n).padStart(2,'0'); }
-
-  function formatTimeRange(ev){
-    // 終日
-    if (ev.allDay) return "終日";
-    const s = ev.start;
-    const e = ev.end;
-    const st = `${pad2(s.getHours())}:${pad2(s.getMinutes())}`;
-    if (!e) return st;
-    const et = `${pad2(e.getHours())}:${pad2(e.getMinutes())}`;
-    return `${st}-${et}`;
-  }
-
+  // ===== Render Today's Events =====
   function renderTodayEvents(calendar){
     const box = document.getElementById('today-events-body');
-    const today = new Date();
-
-    const events = calendar.getEvents()
-      .filter(ev => ev.start && sameDay(ev.start, today))
-      .sort((a,b) => (a.start?.getTime()||0) - (b.start?.getTime()||0));
-
-    if (events.length === 0){
-      box.innerHTML = `<div class="empty">今日の予定はありません</div>`;
-      return;
-    }
-
+    const todayStr = new Date().toISOString().split('T')[0];
+    const events = calendar.getEvents().filter(ev => ev.startStr.startsWith(todayStr));
+    if (!events.length) { box.innerHTML = `<div class="empty">今日の予定はありません</div>`; return; }
     box.innerHTML = events.map(ev => {
-      const time = formatTimeRange(ev);
-      const title = ev.title || "(無題)";
-      const loc = ev.extendedProps?.location || ev._def?.extendedProps?.location || "";
-      const meta = loc ? `<div class="event-meta">${loc}</div>` : "";
-      return `
-        <div class="event-item">
-          <span class="event-dot"></span>
-          <div class="event-time">${time}</div>
-          <div>
-            <div class="event-title">${escapeHtml(title)}</div>
-            ${meta}
-          </div>
-        </div>
-      `;
+      const time = ev.allDay ? "終日" : ev.start.toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit'});
+      return `<div class="event-item"><span class="event-dot"></span><div class="event-time">${time}</div><div class="event-title">${ev.title}</div></div>`;
     }).join("");
   }
 
-  function escapeHtml(str){
-    return String(str)
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
+  // ===== News Logic (RSS) =====
+  async function initNews() {
+    const res = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://rss.itmedia.co.jp/rss/2.0/aiplus.xml");
+    const data = await res.json();
+    let idx = 0;
+    const update = () => {
+      const item = data.items[idx];
+      document.getElementById('news-title').textContent = item.title;
+      document.getElementById('news-source').textContent = "SOURCE: ITmedia AI+";
+      document.getElementById('news-container').onclick = () => window.open(item.link, '_blank');
+      idx = (idx + 1) % data.items.length;
+    };
+    if(data.items.length) { update(); setInterval(update, 10000); }
   }
 
-  // ===== init =====
-  let cal;
-
-  document.addEventListener('DOMContentLoaded', () => {
-    cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
-      initialView: 'dayGridMonth',
-      locale: 'ja',
-      height: '100%',
-      headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
-      dayCellContent: (e) => e.dayNumberText.replace('日', ''),
-      // イベントが変わったら今日の予定を更新
-      eventsSet: () => renderTodayEvents(cal),
-      datesSet: () => renderTodayEvents(cal),
-    });
-
-    cal.render();
-
-    tick();
-    setInterval(tick, 1000 * 5); // 秒なしなので 5秒ごとで十分（負荷低減）
-    initWeather();
-
-    // 初回はイベントが無い想定なので表示だけ整える
-    renderTodayEvents(cal);
-  });
-
-  // ===== Weather =====
+  // ===== Weather Logic =====
   async function initWeather() {
     navigator.geolocation.getCurrentPosition(async (pos) => {
-      const res = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&hourly=temperature_2m,weathercode&current_weather=true&timezone=Asia%2FTokyo`
-      );
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&hourly=temperature_2m,weathercode&current_weather=true&timezone=Asia%2FTokyo`);
       const data = await res.json();
-      const iconMap = { 0:"☀️", 1:"🌤", 2:"☁️", 3:"☁️", 61:"☔️" };
-
-      document.getElementById('weather-icon').textContent =
-        iconMap[data.current_weather.weathercode] || "☁️";
-      document.getElementById('weather-temp').textContent =
-        Math.round(data.current_weather.temperature) + "°C";
-
+      const iconMap = { 0:"☀️", 1:"🌤", 2:"☁️", 3:"☁️", 61:"☔️", 80:"☔️" };
+      document.getElementById('weather-icon').textContent = iconMap[data.current_weather.weathercode] || "☁️";
+      document.getElementById('weather-temp').textContent = Math.round(data.current_weather.temperature) + "°C";
       let html = "";
-      for(let i=3; i<=9; i+=3) {
+      for(let i=3; i<=12; i+=3) {
         html += `<div>${data.hourly.time[i].slice(11,16)}<br>${Math.round(data.hourly.temperature_2m[i])}°</div>`;
       }
       document.getElementById('hourly-forecast').innerHTML = html;
     });
   }
 
-  // ===== Google API連携（あなたの既存ロジックを入れる） =====
-  // 予定を「今日の予定」に出すには、カレンダーにイベントが入る必要があります。
-  // 既存のGoogle Calendar取得処理で cal.addEventSource([...]) しているなら、それだけで今日の予定も自動更新されます。
-  function handleAuthClick() {
-    /* 前述のログインロジックをここに保持 */
-  }
+  document.addEventListener('DOMContentLoaded', () => {
+    cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
+      initialView: 'dayGridMonth', locale: 'ja', height: '100%',
+      headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+      dayCellContent: (e) => e.dayNumberText.replace('日', '')
+    });
+    cal.render();
+    tick(); setInterval(tick, 1000);
+    initNews(); initWeather();
+  });
 </script>
 </body>
 </html>
