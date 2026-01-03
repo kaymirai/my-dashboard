@@ -1,161 +1,310 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Flip Dashboard</title>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&display=swap');
-        :root { --bg: #000; --panel: #111; --accent: #4285f4; --text: #fff; }
-        
-        body { 
-            background: var(--bg); color: var(--text); 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; padding: 20px; height: 100vh; 
-            display: grid; grid-template-columns: 3.5fr 3.5fr 3fr; gap: 20px; 
-            box-sizing: border-box; overflow: hidden; 
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Minimalist Flip Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
-        .card { background: var(--panel); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; border: 1px solid #222; overflow: hidden; }
-        
-        /* フリップクロック: すべて同じサイズ、コロン白固定 */
-        .flip-clock { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
-        .flip-unit { position: relative; width: 100px; height: 140px; background: #1a1a1a; border-radius: 8px; font-size: 8rem; text-align: center; line-height: 140px; font-weight: 900; }
-        .flip-unit::before { content: ""; position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: rgba(0,0,0,0.7); z-index: 10; }
-        .colon { font-size: 4rem; color: #fff; font-weight: 900; padding: 0 5px; } /* 点滅なし・白 */
-        
-        .flip-animate { animation: flipDown 0.4s ease-in; }
-        @keyframes flipDown { 0% { transform: rotateX(0); } 100% { transform: rotateX(-15deg); opacity: 0.9; } }
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&display=swap');
 
-        #date { font-size: 2rem; color: var(--accent); font-weight: 900; margin-bottom: 10px; }
+/* ========= Color System ========= */
+:root{
+  --bg:#0b0f14;
+  --panel:#111827;
+  --panel2:#0f1623;
+  --text:#e5e7eb;
+  --sub:#9ca3af;
+  --border:rgba(255,255,255,.06);
+  --accent:#3b82f6;
+}
 
-        /* レイアウト: カレンダーとTo-Doの高さを完全に同期 */
-        .sync-container { display: flex; flex-direction: column; height: 100%; }
-        #calendar { flex-grow: 1; font-size: 0.85rem; background: #111; }
-        .todo-card { flex-grow: 1; display: flex; flex-direction: column; }
-        .todo-scroll { flex-grow: 1; overflow-y: auto; margin-top: 15px; }
+/* ========= Base ========= */
+*{box-sizing:border-box}
+body{
+  margin:0;
+  padding:20px;
+  height:100vh;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  display:grid;
+  grid-template-columns:4fr 3fr 3fr;
+  gap:20px;
+  overflow:hidden;
+}
 
-        .todo-table { width: 100%; border-collapse: collapse; }
-        .todo-table td { padding: 12px 5px; border-bottom: 1px solid #222; font-size: 0.95rem; }
-        .todo-bullet { color: var(--accent); font-weight: 900; width: 25px; }
+/* ========= Card ========= */
+.card{
+  background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 60%),var(--panel);
+  border-radius:14px;
+  border:1px solid var(--border);
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  box-shadow:0 12px 30px rgba(0,0,0,.35);
+}
 
-        /* 天気とニュース */
-        .forecast-row { display: flex; justify-content: space-around; background: #1a1a1a; border-radius: 8px; padding: 15px; margin-top: auto; }
-        .forecast-item { text-align: center; font-size: 0.8rem; }
-        .source-tag { font-size: 0.7rem; color: var(--accent); font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+/* ========= Left Header (Date) ========= */
+.date-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+.date-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent);
+}
+#date{
+  font-size:1.35rem;
+  font-weight:900;
+}
+#date-sub{
+  font-size:.8rem;
+  color:var(--sub);
+  letter-spacing:.15em;
+}
 
-        #auth-btn { background: var(--accent); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        h3 { margin: 0; font-size: 0.9rem; border-left: 4px solid var(--accent); padding-left: 10px; color: #eee; }
-    </style>
+/* ========= Flip Clock ========= */
+.flip-clock{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.flip-unit{
+  width:92px;height:128px;
+  background:#0b1220;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;
+  font-size:8.2rem;
+  font-weight:900;
+  text-align:center;
+  line-height:128px;
+}
+
+.leaf{animation:flip .55s ease}
+@keyframes flip{
+  0%{transform:rotateX(0)}
+  50%{transform:rotateX(-90deg);opacity:.5}
+  100%{transform:rotateX(0)}
+}
+
+.colon{
+  font-size:3.8rem;
+  opacity:.6;
+  padding-bottom:6px;
+}
+
+/* 秒は「添え物」 */
+#s1,#s2{
+  width:64px;height:92px;
+  line-height:92px;
+  font-size:5.4rem;
+  opacity:.85;
+}
+.flip-clock .colon:last-of-type{
+  opacity:.45;
+  transform:translateY(2px);
+}
+
+/* ========= Layout ========= */
+.sync-container{
+  display:flex;
+  flex-direction:column;
+  height:100%;
+  min-height:0;
+}
+
+/* ========= Calendar ========= */
+#calendar{height:100%}
+.fc-theme-standard td,
+.fc-theme-standard th{
+  border:1px solid var(--border)!important;
+}
+.fc-daygrid-day-number{
+  color:var(--sub)!important;
+  font-weight:700;
+}
+
+/* ========= Headings ========= */
+h3{
+  margin:0;
+  font-size:.75rem;
+  color:var(--sub);
+  letter-spacing:.15em;
+  font-weight:900;
+}
+
+/* ========= Todo ========= */
+.todo-list{
+  margin-top:12px;
+  overflow-y:auto;
+}
+.todo-item{
+  display:flex;
+  gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+}
+.todo-item::before{
+  content:"";
+  width:8px;height:8px;
+  background:var(--sub);
+  border-radius:3px;
+  margin-top:6px;
+}
+
+/* ========= Button ========= */
+#auth-btn{
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  border:1px solid var(--border);
+  padding:6px 10px;
+  border-radius:10px;
+  font-size:.7rem;
+  font-weight:900;
+  letter-spacing:.1em;
+  cursor:pointer;
+}
+
+/* ========= Right Column (Quiet) ========= */
+.sync-container:last-child .card{
+  background:linear-gradient(180deg,rgba(255,255,255,.02),transparent 60%),var(--panel2);
+  border-color:rgba(255,255,255,.05);
+}
+
+/* Weather */
+#weather-icon{font-size:4rem;opacity:.9}
+#weather-temp{font-size:2.8rem;font-weight:900}
+
+/* KPI */
+.mini-kpi{
+  flex-direction:row;
+  justify-content:space-around;
+  align-items:center;
+}
+.mini-kpi b{font-size:1.25rem}
+.mini-kpi .label{
+  font-size:.7rem;
+  color:var(--sub);
+  letter-spacing:.15em;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,.12);
+  border-radius:999px;
+}
+</style>
 </head>
+
 <body>
 
+<!-- LEFT -->
 <div class="sync-container">
-    <div id="date">LOADING...</div>
-    <div class="flip-clock">
-        <div class="flip-unit" id="h1">0</div><div class="flip-unit" id="h2">0</div>
-        <div class="colon">:</div>
-        <div class="flip-unit" id="m1">0</div><div class="flip-unit" id="m2">0</div>
-        <div class="colon">:</div>
-        <div class="flip-unit" id="s1">0</div><div class="flip-unit" id="s2">0</div>
-    </div>
-    <div class="card" style="flex-grow: 1;"><div id="calendar"></div></div>
+  <div class="date-header">
+    <span class="date-dot"></span>
+    <div id="date">0000/00/00（日）</div>
+    <div id="date-sub">今日</div>
+  </div>
+
+  <div class="flip-clock">
+    <div class="flip-unit" id="h1">0</div>
+    <div class="flip-unit" id="h2">0</div>
+    <div class="colon">:</div>
+    <div class="flip-unit" id="m1">0</div>
+    <div class="flip-unit" id="m2">0</div>
+    <div class="colon">:</div>
+    <div class="flip-unit" id="s1">0</div>
+    <div class="flip-unit" id="s2">0</div>
+  </div>
+
+  <div class="card" style="flex-grow:1">
+    <div id="calendar"></div>
+  </div>
 </div>
 
-<div class="sync-container" style="padding-top: 55px;"> <div class="card todo-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3>GOOGLE TO-DO LIST</h3>
-            <button id="auth-btn" onclick="handleAuthClick()">Login</button>
-        </div>
-        <div class="todo-scroll">
-            <table class="todo-table">
-                <tbody id="todo-body">
-                    <tr><td class="todo-bullet">○</td><td>ショート動画①アップ3本（午前）</td></tr>
-                    <tr><td class="todo-bullet">○</td><td>MV作成⑧ & Etsyデザイン作成</td></tr>
-                    <tr><td class="todo-bullet">○</td><td>楽曲完成⑦後半（Distrokid）</td></tr>
-                </tbody>
-            </table>
-        </div>
+<!-- CENTER -->
+<div class="sync-container" style="padding-top:44px">
+  <div class="card" style="flex-grow:1">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3>やること</h3>
+      <button id="auth-btn">ログイン</button>
     </div>
+    <div class="todo-list">
+      <div class="todo-item">ショート動画 3本</div>
+      <div class="todo-item">MV制作</div>
+      <div class="todo-item">Etsyデザイン</div>
+    </div>
+  </div>
 </div>
 
+<!-- RIGHT -->
 <div class="sync-container">
-    <div class="card" style="height: 160px; justify-content: center;">
-        <div id="news-source" class="source-tag">SOURCE: ITmedia AI+</div>
-        <div id="news-title" style="font-size: 1.2rem; font-weight: bold; line-height: 1.4;">[AI] OpenAI公式チートシートが注目 プロンプト作成は...</div>
-    </div>
-    
-    <div class="card weather-panel" style="flex-grow: 1; margin: 20px 0;">
-        <h3>現在の地域の天気</h3>
-        <div style="text-align:center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-            <span id="weather-icon" style="font-size: 6rem;">☀️</span>
-            <div id="weather-temp" style="font-size: 4rem; font-weight: 900; margin-top: -10px;">1°C</div>
-        </div>
-        <div class="forecast-row" id="hourly-forecast">
-            </div>
-    </div>
+  <div class="card" style="height:150px;justify-content:center">
+    <h3>ニュース</h3>
+    <div style="font-weight:900;margin-top:8px">読み込み中…</div>
+  </div>
 
-    <div class="card" style="height: 100px; flex-direction: row; justify-content: space-around; align-items: center;">
-        <div style="text-align:center;">日経平均<br><span style="color:#4ade80; font-size: 1.4rem;">¥39,450</span></div>
-        <div style="text-align:center;">USD/JPY<br><span style="color:#4ade80; font-size: 1.4rem;">149.12</span></div>
+  <div class="card" style="flex-grow:1;align-items:center;justify-content:center;margin:20px 0">
+    <h3>現在の天気</h3>
+    <div id="weather-icon">☀️</div>
+    <div id="weather-temp">3°C</div>
+  </div>
+
+  <div class="card mini-kpi" style="height:100px">
+    <div>
+      <div class="label">日経平均</div>
+      <b>39,450</b>
     </div>
+    <div>
+      <div class="label">ドル円</div>
+      <b>149.12</b>
+    </div>
+  </div>
 </div>
 
 <script>
-    function updateFlipUnit(id, value) {
-        const el = document.getElementById(id);
-        if (el.innerText !== value) {
-            el.innerText = value;
-            el.classList.remove('flip-animate');
-            void el.offsetWidth;
-            el.classList.add('flip-animate');
-        }
-    }
+function updateFlip(id,val){
+  const el=document.getElementById(id)
+  if(el.textContent!==val){
+    el.textContent=val
+    el.classList.remove('leaf')
+    void el.offsetWidth
+    el.classList.add('leaf')
+  }
+}
 
-    function updateTime() {
-        const now = new Date();
-        const h = String(now.getHours()).padStart(2, '0');
-        const m = String(now.getMinutes()).padStart(2, '0');
-        const s = String(now.getSeconds()).padStart(2, '0');
-        
-        updateFlipUnit('h1', h[0]); updateFlipUnit('h2', h[1]);
-        updateFlipUnit('m1', m[0]); updateFlipUnit('m2', m[1]);
-        updateFlipUnit('s1', s[0]); updateFlipUnit('s2', s[1]);
+function formatDate(d){
+  const w="日月火水木金土"[d.getDay()]
+  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}（${w}）`
+}
 
-        document.getElementById('date').innerText = now.toLocaleDateString('ja-JP', {year:'numeric', month:'2-digit', day:'2-digit', weekday:'short'}).toUpperCase();
-    }
+function tick(){
+  const d=new Date()
+  const h=String(d.getHours()).padStart(2,'0')
+  const m=String(d.getMinutes()).padStart(2,'0')
+  const s=String(d.getSeconds()).padStart(2,'0')
+  updateFlip('h1',h[0]);updateFlip('h2',h[1])
+  updateFlip('m1',m[0]);updateFlip('m2',m[1])
+  updateFlip('s1',s[0]);updateFlip('s2',s[1])
+  document.getElementById('date').textContent=formatDate(d)
+}
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const calendarEl = document.getElementById('calendar');
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            locale: 'ja',
-            height: '100%',
-            headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
-            events: [{ title: '流行り動画UP', start: new Date().toISOString().split('T')[0], color: '#4285f4' }]
-        });
-        calendar.render();
-        updateTime();
-        setInterval(updateTime, 1000);
-        initWeather();
-    });
-
-    async function initWeather() {
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&hourly=temperature_2m,weathercode&current_weather=true&timezone=Asia%2FTokyo`);
-            const data = await res.json();
-            const icons = { 0: "☀️", 1: "🌤", 2: "☁️", 3: "☁️", 61: "☔️" };
-            document.getElementById('weather-icon').innerText = icons[data.current_weather.weathercode] || "☁️";
-            document.getElementById('weather-temp').innerText = Math.round(data.current_weather.temperature) + "°C";
-
-            let forecastHTML = '';
-            for(let i=3; i<=12; i+=3) {
-                forecastHTML += `<div class="forecast-item">${data.hourly.time[i].slice(11,16)}<span>${icons[data.hourly.weathercode[i]]||"☁️"}</span><span style="display:block; font-weight:bold;">${Math.round(data.hourly.temperature_2m[i])}°</span></div>`;
-            }
-            document.getElementById('hourly-forecast').innerHTML = forecastHTML;
-        });
-    }
+document.addEventListener('DOMContentLoaded',()=>{
+  new FullCalendar.Calendar(calendar,{
+    initialView:'dayGridMonth',
+    locale:'ja',
+    height:'100%'
+  }).render()
+  tick()
+  setInterval(tick,1000)
+})
 </script>
 </body>
 </html>
