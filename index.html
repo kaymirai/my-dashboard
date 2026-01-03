@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Airport Minimal Pro</title>
+  <title>Minimalist Pro Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap');
@@ -14,18 +14,19 @@
       font-family: 'Inter', sans-serif; display: grid; grid-template-columns: 4fr 3.2fr 2.8fr; gap: 20px;
     }
 
-    #auth-btn { position: fixed; top: 20px; right: 20px; z-index: 9999; background: #fff; color: #000; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 900; cursor: pointer; }
+    /* ログインボタンをTo-Doの右上に配置 */
+    #auth-btn { background: #fff; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 900; cursor: pointer; font-size: 0.7rem; }
 
     .sync-container { display: flex; flex-direction: column; height: 100%; gap: 20px; min-height: 0; }
     .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; min-height: 0; }
 
-    /* --- 空港風パタパタ時計（アニメーション改良） --- */
+    /* --- 改良版：パタパタ（ソラリー）時計 --- */
     .clock-container { display: flex; gap: 12px; align-items: center; margin-bottom: 5px; }
     .flip-card { 
       position: relative; width: 130px; height: 160px; background: #0b1220; border-radius: 12px; 
       font-size: 10rem; line-height: 160px; text-align: center; font-weight: 900; 
       border: 1px solid rgba(255,255,255,.08);
-      perspective: 1000px; /* 3D効果を強調 */
+      perspective: 1000px;
     }
     .flip-card::after { 
       content: ""; position: absolute; top: 50%; left: 0; width: 100%; height: 2px; 
@@ -33,33 +34,28 @@
     }
     .colon { font-size: 4rem; font-weight: 900; color: var(--sub); padding-bottom: 10px; }
 
-    /* パタンと降りてくるアニメーション */
-    .flap-move { animation: flap-down 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    /* パタンと降りてくるアニメーション（開始を水平90度にする） */
+    .flap-move { animation: flap-down 0.5s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
     @keyframes flap-down { 
-      0% { transform: rotateX(90deg); opacity: 0.5; } /* 上から倒れてくる開始点 */
+      0% { transform: rotateX(90deg); opacity: 0; } 
       100% { transform: rotateX(0deg); opacity: 1; } 
     }
 
-    /* --- スケジュール & ToDo --- */
-    h3 { margin: 0 0 12px 0; font-size: .7rem; letter-spacing: .15em; font-weight: 900; color: var(--sub); }
+    /* --- リスト・予定 --- */
+    h3 { margin: 0 0 10px 0; font-size: .7rem; letter-spacing: .15em; font-weight: 900; color: var(--sub); text-transform: uppercase; }
     .scroll-area { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
     .item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; align-items: flex-start; }
     .item-time { font-weight: 900; color: var(--accent); min-width: 50px; }
-    
-    .todo-check { width: 20px; height: 20px; border: 2px solid var(--sub); border-radius: 4px; cursor: pointer; flex-shrink: 0; transition: 0.2s; }
+    .todo-check { width: 18px; height: 18px; border: 2px solid var(--sub); border-radius: 4px; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
     .todo-check:hover { border-color: #fff; }
-    .todo-text { font-weight: 700; line-height: 1.4; }
 
-    /* --- 2系統ニュース --- */
+    /* --- 2系統ニュース & 天気スリム化 --- */
     .news-card { height: 160px; cursor: pointer; }
-    .news-title { font-size: 0.95rem; font-weight: 900; line-height: 1.5; margin-top: 8px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .news-title { font-size: 0.95rem; font-weight: 900; line-height: 1.5; margin-top: 5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     
-    /* --- 天気の極限スリム化 --- */
     .weather-slim { height: 75px; flex-direction: row; align-items: center; justify-content: space-between; padding: 0 20px; }
-    #weather-main { display: flex; align-items: center; gap: 10px; }
     #weather-temp { font-size: 2rem; font-weight: 900; }
     #weather-icon { font-size: 2.2rem; }
-    #hourly-forecast { display: flex; gap: 12px; font-size: 0.7rem; color: var(--sub); font-weight: 700; }
 
     .kpi-box { height: 80px; flex-direction: row; justify-content: space-around; align-items: center; }
     ::-webkit-scrollbar { width: 4px; }
@@ -68,15 +64,13 @@
 </head>
 <body>
 
-<button id="auth-btn" onclick="handleAuthClick()">GOOGLE LOGIN</button>
-
 <div class="sync-container">
   <div>
-    <div id="date" style="font-size: 1.3rem; font-weight: 900; color: var(--accent); margin-bottom: 5px;">0000.00.00</div>
+    <div id="date" style="font-size: 1.35rem; font-weight: 900; color: var(--accent); margin-bottom: 5px;">0000.00.00</div>
     <div class="clock-container">
       <div class="flip-card" id="h1">0</div><div class="flip-card" id="h2">0</div>
       <div class="colon">:</div>
-      <div class="flip-clock flip-card" id="m1">0</div><div class="flip-card" id="m2">0</div>
+      <div class="flip-card" id="m1">0</div><div class="flip-card" id="m2">0</div>
     </div>
   </div>
   <div class="card" style="flex-grow: 1;"><div id="calendar"></div></div>
@@ -88,7 +82,10 @@
     <div class="scroll-area" id="today-events"><div style="color:var(--sub)">同期中...</div></div>
   </div>
   <div class="card" style="flex-grow: 1;">
-    <h3>GOOGLE TO-DO LIST</h3>
+    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+      <h3>GOOGLE TO-DO</h3>
+      <button id="auth-btn" onclick="handleAuthClick()">LOGIN</button>
+    </div>
     <div class="scroll-area" id="todo-list"></div>
   </div>
 </div>
@@ -103,11 +100,11 @@
     <div class="news-title" id="ent-title">Loading...</div>
   </div>
   <div class="card weather-slim">
-    <div id="weather-main">
+    <div style="display:flex; align-items:center; gap:10px;">
       <span id="weather-icon">--</span>
       <span id="weather-temp">--°</span>
     </div>
-    <div id="hourly-forecast"></div>
+    <div id="hourly-forecast" style="display:flex; gap:12px; font-size:0.7rem; color:var(--sub); font-weight:700;"></div>
   </div>
   <div class="card kpi-box">
     <div style="text-align:center;"><h3>NIKKEI</h3><b style="font-size:1.2rem;">39,450</b></div>
@@ -123,7 +120,7 @@
   const SCOPES = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks"; 
   let tokenClient, cal, currentTaskListId;
 
-  // --- 改良版パタパタロジック ---
+  // --- パタパタロジック：開始を90度（水平）にしてパタンと倒す ---
   function updateFlip(id, val) {
     const el = document.getElementById(id);
     if (el.innerText !== val) {
@@ -154,20 +151,28 @@
   }
   function handleAuthClick() { tokenClient.requestAccessToken({prompt: 'consent'}); }
 
+  // 日本時間（JST）の YYYY-MM-DD を取得
+  function getJSTDateStr(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
   async function loadData() {
     document.getElementById('auth-btn').style.display = 'none';
-    
-    // カレンダー & 今日の予定
     const res = await gapi.client.calendar.events.list({ calendarId: 'primary', timeMin: new Date().toISOString(), singleEvents: true, orderBy: 'startTime' });
     const events = res.result.items.map(e => ({ title: e.summary, start: e.start.dateTime || e.start.date }));
     cal.removeAllEvents(); cal.addEventSource(events);
     
-    const todayStr = new Date().toISOString().split('T')[0];
-    document.getElementById('today-events').innerHTML = events.filter(e => e.start.startsWith(todayStr)).map(e => `
-      <div class="item"><div class="item-time">${e.start.includes('T') ? e.start.slice(11,16) : 'ALL'}</div><div class="todo-text">${e.title}</div></div>
+    // 修正：日本時間で今日の予定をフィルタリング
+    const todayJST = getJSTDateStr(new Date());
+    const todayEvents = events.filter(e => e.start.startsWith(todayJST));
+    document.getElementById('today-events').innerHTML = todayEvents.map(e => `
+      <div class="item"><div class="item-time">${e.start.includes('T') ? e.start.slice(11,16) : 'ALL'}</div><div>${e.title}</div></div>
     `).join('') || '<div style="color:var(--sub)">予定なし</div>';
 
-    // ToDo完了連携
+    // ToDo & 完了連携
     const taskListRes = await gapi.client.tasks.tasklists.list();
     if (taskListRes.result.items) {
       currentTaskListId = taskListRes.result.items[0].id;
@@ -192,15 +197,18 @@
       { id: 'ent', url: 'https://news.yahoo.co.jp/rss/topics/entertainment.xml' }
     ];
     for (let f of feeds) {
-      const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(f.url)}`);
-      const data = await res.json();
-      let idx = 0;
-      const rotate = () => {
-        document.getElementById(`${f.id}-title`).innerText = data.items[idx].title;
-        document.getElementById(`news-${f.id}`).onclick = () => window.open(data.items[idx].link, '_blank');
-        idx = (idx + 1) % data.items.length;
-      };
-      rotate(); setInterval(rotate, 10000);
+      try {
+        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(f.url)}`);
+        const data = await res.json();
+        let idx = 0;
+        const rotate = () => {
+          if(!data.items) return;
+          document.getElementById(`${f.id}-title`).innerText = data.items[idx].title;
+          document.getElementById(`news-${f.id}`).onclick = () => window.open(data.items[idx].link, '_blank');
+          idx = (idx + 1) % data.items.length;
+        };
+        rotate(); setInterval(rotate, 12000);
+      } catch(e) {}
     }
   }
 
@@ -211,7 +219,6 @@
       const icons = { 0:"☀️", 1:"🌤", 2:"☁️", 3:"☁️", 61:"☔️" };
       document.getElementById('weather-icon').innerText = icons[data.current_weather.weathercode] || "☁️";
       document.getElementById('weather-temp').innerText = Math.round(data.current_weather.temperature);
-      
       let html = "";
       for(let i=3; i<=9; i+=3) {
         html += `<div>${data.hourly.time[i].slice(11,16)} ${icons[data.hourly.weathercode[i]]||"☁️"}${Math.round(data.hourly.temperature_2m[i])}°</div>`;
