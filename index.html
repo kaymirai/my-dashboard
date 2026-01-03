@@ -356,4 +356,190 @@
         <button id="auth-btn" onclick="handleAuthClick()">ログイン</button>
       </div>
       <div class="todo-list" id="todo-body">
-        <!-- ある分だけここに追加される想
+        <!-- ある分だけここに追加される想定（スクロールで全部見れる） -->
+        <div class="todo-item">ショート動画 3本</div>
+        <div class="todo-item">MV制作</div>
+        <div class="todo-item">Etsyデザイン</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="sync-container right">
+
+    <div class="card news-card">
+      <h3 id="news-source">ニュース</h3>
+      <div id="news-title" class="news-title">読み込み中…</div>
+    </div>
+
+    <div class="card weather-card">
+      <h3 id="location-name">現在の天気</h3>
+      <div id="weather-icon">--</div>
+      <div id="weather-temp">--°C</div>
+      <div id="hourly-forecast"></div>
+    </div>
+
+    <div class="card mini-kpi">
+      <div>
+        <div class="label">日経平均</div>
+        <b>39,450</b>
+      </div>
+      <div>
+        <div class="label">ドル円</div>
+        <b>149.12</b>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // ===== Flip update =====
+  function updateFlip(id, val) {
+    const el = document.getElementById(id);
+    if (el.textContent !== val) {
+      el.textContent = val;
+      el.classList.remove('leaf');
+      void el.offsetWidth;
+      el.classList.add('leaf');
+    }
+  }
+
+  // YYYY/MM/DD（曜）
+  function formatJaDate(now){
+    const y = now.getFullYear();
+    const mo = String(now.getMonth()+1).padStart(2,'0');
+    const d = String(now.getDate()).padStart(2,'0');
+    const w = ["日","月","火","水","木","金","土"][now.getDay()];
+    return `${y}/${mo}/${d}（${w}）`;
+  }
+
+  // 秒なし tick
+  function tick(){
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+
+    updateFlip('h1', h[0]); updateFlip('h2', h[1]);
+    updateFlip('m1', m[0]); updateFlip('m2', m[1]);
+
+    document.getElementById('date').textContent = formatJaDate(now);
+    document.getElementById('date-sub').textContent = "今日";
+  }
+
+  // ===== 今日の予定：FullCalendarのイベントから抽出して表示 =====
+  function sameDay(a, b){
+    return a.getFullYear() === b.getFullYear()
+      && a.getMonth() === b.getMonth()
+      && a.getDate() === b.getDate();
+  }
+
+  function pad2(n){ return String(n).padStart(2,'0'); }
+
+  function formatTimeRange(ev){
+    // 終日
+    if (ev.allDay) return "終日";
+    const s = ev.start;
+    const e = ev.end;
+    const st = `${pad2(s.getHours())}:${pad2(s.getMinutes())}`;
+    if (!e) return st;
+    const et = `${pad2(e.getHours())}:${pad2(e.getMinutes())}`;
+    return `${st}-${et}`;
+  }
+
+  function renderTodayEvents(calendar){
+    const box = document.getElementById('today-events-body');
+    const today = new Date();
+
+    const events = calendar.getEvents()
+      .filter(ev => ev.start && sameDay(ev.start, today))
+      .sort((a,b) => (a.start?.getTime()||0) - (b.start?.getTime()||0));
+
+    if (events.length === 0){
+      box.innerHTML = `<div class="empty">今日の予定はありません</div>`;
+      return;
+    }
+
+    box.innerHTML = events.map(ev => {
+      const time = formatTimeRange(ev);
+      const title = ev.title || "(無題)";
+      const loc = ev.extendedProps?.location || ev._def?.extendedProps?.location || "";
+      const meta = loc ? `<div class="event-meta">${loc}</div>` : "";
+      return `
+        <div class="event-item">
+          <span class="event-dot"></span>
+          <div class="event-time">${time}</div>
+          <div>
+            <div class="event-title">${escapeHtml(title)}</div>
+            ${meta}
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  // ===== init =====
+  let cal;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
+      initialView: 'dayGridMonth',
+      locale: 'ja',
+      height: '100%',
+      headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+      dayCellContent: (e) => e.dayNumberText.replace('日', ''),
+      // イベントが変わったら今日の予定を更新
+      eventsSet: () => renderTodayEvents(cal),
+      datesSet: () => renderTodayEvents(cal),
+    });
+
+    cal.render();
+
+    tick();
+    setInterval(tick, 1000 * 5); // 秒なしなので 5秒ごとで十分（負荷低減）
+    initWeather();
+
+    // 初回はイベントが無い想定なので表示だけ整える
+    renderTodayEvents(cal);
+  });
+
+  // ===== Weather =====
+  async function initWeather() {
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const res = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&hourly=temperature_2m,weathercode&current_weather=true&timezone=Asia%2FTokyo`
+      );
+      const data = await res.json();
+      const iconMap = { 0:"☀️", 1:"🌤", 2:"☁️", 3:"☁️", 61:"☔️" };
+
+      document.getElementById('weather-icon').textContent =
+        iconMap[data.current_weather.weathercode] || "☁️";
+      document.getElementById('weather-temp').textContent =
+        Math.round(data.current_weather.temperature) + "°C";
+
+      let html = "";
+      for(let i=3; i<=9; i+=3) {
+        html += `<div>${data.hourly.time[i].slice(11,16)}<br>${Math.round(data.hourly.temperature_2m[i])}°</div>`;
+      }
+      document.getElementById('hourly-forecast').innerHTML = html;
+    });
+  }
+
+  // ===== Google API連携（あなたの既存ロジックを入れる） =====
+  // 予定を「今日の予定」に出すには、カレンダーにイベントが入る必要があります。
+  // 既存のGoogle Calendar取得処理で cal.addEventSource([...]) しているなら、それだけで今日の予定も自動更新されます。
+  function handleAuthClick() {
+    /* 前述のログインロジックをここに保持 */
+  }
+</script>
+</body>
+</html>
