@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Minimalist Pro Fixed Dashboard v6</title>
+  <title>Minimalist Pro Dashboard v7</title>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap');
@@ -16,12 +16,12 @@
       --c-sub:    rgba(255, 255, 255, 0.5); 
       --c-border: rgba(255, 255, 255, 0.15);
       
-      --c-good:   #22c55e; /* 平常運転用 */
-      --c-warn:   #ef4444; /* 遅延用 */
+      --c-good:   #22c55e;
+      --c-warn:   #ef4444;
 
       --fz-lg: 1.8rem;
-      --fz-md: 1.0rem;
-      --fz-sm: 0.75rem;
+      --fz-md: 0.95rem; /* 少し文字サイズを調整して収まりよく */
+      --fz-sm: 0.7rem;
     }
 
     * { box-sizing: border-box; }
@@ -37,14 +37,14 @@
 
     .card { 
       background: var(--c-panel); border: 1px solid var(--c-border); 
-      border-radius: 12px; padding: 18px; 
+      border-radius: 12px; padding: 14px; /* パディングを少し縮小 */
       display: flex; flex-direction: column; 
       min-height: 0; overflow: hidden; position: relative;
     }
 
     /* --- Column Left --- */
     .col-left { display: flex; flex-direction: column; gap: 20px; overflow: hidden; height: 100%; }
-    .clock-area { flex: 0 0 auto; padding: 0 0 10px 0; }
+    .clock-area { flex: 0 0 auto; padding: 0 0 5px 0; }
     
     #date-display { 
       font-size: var(--fz-lg); font-weight: 900; color: var(--c-accent); 
@@ -64,84 +64,85 @@
     .todo-card { flex: 1 1 0; min-height: 0; }
     
     h3 { 
-      margin: 0 0 12px 0; font-size: var(--fz-sm); letter-spacing: .15em; 
+      margin: 0 0 10px 0; font-size: var(--fz-sm); letter-spacing: .15em; 
       font-weight: 900; color: var(--c-sub); text-transform: uppercase; 
-      border-left: 4px solid var(--c-accent); padding-left: 10px; flex-shrink: 0; 
+      border-left: 3px solid var(--c-accent); padding-left: 8px; flex-shrink: 0; 
     }
     .scroll-area { flex-grow: 1; overflow-y: auto; padding-right: 5px; min-height: 0; }
     .item { 
-      display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--c-border); 
+      display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--c-border); 
       font-size: var(--fz-md); align-items: flex-start; font-weight: 700; line-height: 1.4; 
     }
-    .item-time { color: var(--c-accent); min-width: 50px; font-size: var(--fz-sm); font-weight: 900; white-space: nowrap; margin-top: 2px; }
+    .item-time { color: var(--c-accent); min-width: 45px; font-size: var(--fz-sm); font-weight: 900; white-space: nowrap; margin-top: 2px; }
     .todo-check { 
-      width: 18px; height: 18px; border: 2px solid var(--c-sub); border-radius: 4px; 
+      width: 16px; height: 16px; border: 2px solid var(--c-sub); border-radius: 4px; 
       cursor: pointer; flex-shrink: 0; margin-top: 3px; 
     }
     .todo-check:hover { border-color: var(--c-accent); }
 
-    /* --- Column Right --- */
-    .col-right { display: flex; flex-direction: column; gap: 20px; overflow: hidden; height: 100%; }
+    /* --- Column Right (高密度) --- */
+    .col-right { display: flex; flex-direction: column; gap: 12px; overflow: hidden; height: 100%; }
     
-    .news-card { flex: 0 0 auto; height: 125px; cursor: pointer; } /* 少し高さを詰めた */
-    .news-src { font-size: var(--fz-sm); color: var(--c-accent); font-weight: 900; }
+    /* ニュースは2つ。高さを固定 */
+    .news-card { flex: 0 0 110px; cursor: pointer; justify-content: center; } 
+    .news-src { font-size: var(--fz-sm); color: var(--c-accent); font-weight: 900; margin-bottom: 4px;}
     .news-title { 
-      font-size: var(--fz-md); font-weight: 900; line-height: 1.5; color: var(--c-text); margin-top: 8px; 
-      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; 
+      font-size: var(--fz-md); font-weight: 900; line-height: 1.4; color: var(--c-text); 
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; 
     }
     
-    /* Railway Card (New) */
-    .railway-card { 
-      flex: 0 0 auto; height: 100px; cursor: pointer; 
+    /* ステータス系カード (鉄道・災害) */
+    .status-card { 
+      flex: 0 0 85px; cursor: pointer; 
       display: flex; flex-direction: column; justify-content: center;
     }
-    .rail-status-row { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; }
-    .rail-line { font-size: var(--fz-lg); font-weight: 900; line-height: 1; }
-    .rail-badge { 
-      font-size: var(--fz-sm); font-weight: 900; padding: 4px 8px; 
-      border-radius: 4px; background: #333; color: #fff; text-transform: uppercase;
+    .status-row { display: flex; align-items: center; justify-content: space-between; margin-top: 2px; }
+    .status-main { font-size: 1.4rem; font-weight: 900; line-height: 1; }
+    .status-badge { 
+      font-size: 0.7rem; font-weight: 900; padding: 4px 8px; 
+      border-radius: 4px; background: #222; color: #888; text-transform: uppercase; letter-spacing: 0.5px;
     }
     
-    .weather-card { flex: 1; min-height: 0; justify-content: center; }
-    #weather-main { display: flex; align-items: center; justify-content: space-around; margin-bottom: 10px; }
-    #weather-temp { font-size: 3.5rem; font-weight: 900; color: var(--c-text); line-height: 1; }
-    #weather-icon { font-size: 3.5rem; }
+    /* 天気は余ったスペースを使う */
+    .weather-card { flex: 1; min-height: 0; justify-content: center; padding: 10px; }
+    #weather-main { display: flex; align-items: center; justify-content: space-around; margin-bottom: 5px; }
+    #weather-temp { font-size: 2.8rem; font-weight: 900; color: var(--c-text); line-height: 1; }
+    #weather-icon { font-size: 2.8rem; }
     #hourly-forecast { 
       display: flex; justify-content: space-around; border-top: 1px solid var(--c-border); 
-      padding-top: 15px; font-size: var(--fz-sm); color: var(--c-text); font-weight: 900; 
+      padding-top: 8px; font-size: 0.7rem; color: var(--c-text); font-weight: 900; 
     }
     
+    /* マーケット */
     .market-card { 
-      flex: 0 0 80px; display: flex; flex-direction: row; justify-content: space-around; align-items: center; 
-      background: var(--c-panel); border: 1px solid var(--c-border); border-radius: 12px; padding: 10px;
+      flex: 0 0 70px; display: flex; flex-direction: row; justify-content: space-around; align-items: center; 
+      background: var(--c-panel); border: 1px solid var(--c-border); border-radius: 12px; padding: 5px;
     }
-    .market-val { font-size: var(--fz-lg); font-weight: 900; display:block; line-height: 1; margin-top: -5px; }
+    .market-val { font-size: 1.4rem; font-weight: 900; display:block; line-height: 1; margin-top: -4px; }
+    .market-label { font-size: 0.65rem; color: var(--c-sub); font-weight: 900; letter-spacing: 1px; margin-bottom: 2px; display:block; text-align:center;}
 
     #auth-btn { 
       background: var(--c-panel); border: 1px solid var(--c-border); color: var(--c-text); 
-      padding: 4px 10px; border-radius: 4px; font-weight: 900; cursor: pointer; 
-      font-size: var(--fz-sm); transition: all 0.2s; 
+      padding: 4px 8px; border-radius: 4px; font-weight: 900; cursor: pointer; 
+      font-size: 0.65rem; transition: all 0.2s; 
     }
     #auth-btn:hover { border-color: var(--c-accent); color: var(--c-accent); }
 
-    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar { width: 3px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--c-panel); border: 1px solid var(--c-border); border-radius: 10px; }
     
     /* FullCalendar */
     .fc { font-family: 'Inter', sans-serif; --fc-border-color: var(--c-border); --fc-today-bg-color: rgba(59,130,246,0.15); }
-    .fc-toolbar-title { 
-      font-size: 1.4rem !important; font-weight: 900; letter-spacing: -0.5px; 
-      color: var(--c-text); margin-left: 4px; 
-    }
-    .fc-col-header-cell-cushion { color: var(--c-sub); font-size: var(--fz-sm); text-decoration: none !important; py: 4px; }
-    .fc-daygrid-day-number { color: var(--c-text) !important; font-weight: 700; text-decoration: none !important; font-size: 0.85rem; padding: 4px 8px !important; }
-    .fc-day-today .fc-daygrid-day-number { color: var(--c-accent) !important; font-size: 1rem; }
-    .fc-event { border: none; background: var(--c-accent); font-size: 0.7rem; font-weight: 700; padding: 1px 3px; border-radius: 2px; }
+    .fc-toolbar-title { font-size: 1.3rem !important; font-weight: 900; letter-spacing: -0.5px; color: var(--c-text); margin-left: 4px; }
+    .fc-col-header-cell-cushion { color: var(--c-sub); font-size: 0.7rem; text-decoration: none !important; py: 4px; }
+    .fc-daygrid-day-number { color: var(--c-text) !important; font-weight: 700; text-decoration: none !important; font-size: 0.8rem; padding: 4px 6px !important; }
+    .fc-day-today .fc-daygrid-day-number { color: var(--c-accent) !important; font-size: 0.95rem; }
+    .fc-event { border: none; background: var(--c-accent); font-size: 0.65rem; font-weight: 700; padding: 1px 3px; border-radius: 2px; }
     .fc-day-other .fc-daygrid-day-number { opacity: 0.3; }
     .fc-view-harness { height: 100% !important; } 
     .fc-scroller { overflow: hidden !important; }
-    .fc-toolbar.fc-header-toolbar { margin-bottom: 10px !important; }
+    .fc-toolbar.fc-header-toolbar { margin-bottom: 8px !important; }
   </style>
 </head>
 <body>
@@ -164,7 +165,7 @@
     </div>
   </div>
   <div class="card todo-card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-shrink: 0;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-shrink: 0;">
       <h3>GOOGLE TO-DO</h3>
       <button id="auth-btn" onclick="handleAuthClick()">LOGIN</button>
     </div>
@@ -177,14 +178,27 @@
 <div class="col-right">
   <div class="card news-card" id="news-tech">
     <div class="news-src" id="tech-src">TECH NEWS</div>
-    <div class="news-title" id="tech-title">取得中...</div>
+    <div class="news-title" id="tech-title">Loading...</div>
   </div>
   
-  <div class="card railway-card" id="railway-card" onclick="window.open('https://transit.yahoo.co.jp/diainfo/109/0', '_blank')">
+  <div class="card news-card" id="news-trend">
+    <div class="news-src" id="trend-src">TREND NEWS</div>
+    <div class="news-title" id="trend-title">Loading...</div>
+  </div>
+  
+  <div class="card status-card" id="railway-card" onclick="window.open('https://transit.yahoo.co.jp/diainfo/109/0', '_blank')">
     <div class="news-src">ODAKYU LINE</div>
-    <div class="rail-status-row">
-        <div class="rail-line">小田急線</div>
-        <div class="rail-badge" id="rail-status">CHECKING...</div>
+    <div class="status-row">
+        <div class="status-main">小田急線</div>
+        <div class="status-badge" id="rail-status">CHECKING...</div>
+    </div>
+  </div>
+
+  <div class="card status-card" id="disaster-card" onclick="window.open('https://typhoon.yahoo.co.jp/weather/jp/warn/', '_blank')">
+    <div class="news-src" style="color:#ef4444;">DISASTER INFO</div>
+    <div class="status-row">
+        <div class="status-main">災害情報</div>
+        <div class="status-badge" id="disaster-status">CHECKING...</div>
     </div>
   </div>
 
@@ -192,9 +206,10 @@
     <div id="weather-main"><div id="weather-icon">--</div><div id="weather-temp">--°</div></div>
     <div id="hourly-forecast"></div>
   </div>
-  <div class="market-card">
-    <div style="text-align:center;"><h3>NIKKEI</h3><b class="market-val">39,450</b></div>
-    <div style="text-align:center;"><h3>USD/JPY</h3><b class="market-val">149.12</b></div>
+  
+  <div class="card market-card">
+    <div style="text-align:center;"><span class="market-label">NIKKEI</span><b class="market-val">39,450</b></div>
+    <div style="text-align:center;"><span class="market-label">USD/JPY</span><b class="market-val">149.12</b></div>
   </div>
 </div>
 
@@ -214,7 +229,6 @@
     document.getElementById('date-display').innerText = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${w}`;
   }
 
-  /* --- Proxy Fetcher --- */
   const proxyServices = [
     (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
     (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
@@ -229,48 +243,76 @@
     }
     return null;
   }
+  
+  async function fetchRSS(feedUrl) {
+    const text = await fetchWithRetry(feedUrl);
+    if (!text) return null;
+    const xml = new DOMParser().parseFromString(text, "text/xml");
+    const items = Array.from(xml.querySelectorAll("item")).map(i => ({
+      t: i.querySelector("title")?.textContent || "",
+      l: i.querySelector("link")?.textContent || "#"
+    }));
+    return items;
+  }
 
-  /* --- Railway Info (Scraping Yahoo) --- */
+  /* --- Railway --- */
   async function initRailway() {
-    const yahooUrl = 'https://transit.yahoo.co.jp/diainfo/109/0'; // 小田急小田原線
-    const html = await fetchWithRetry(yahooUrl);
+    const html = await fetchWithRetry('https://transit.yahoo.co.jp/diainfo/109/0'); // 小田急
     const badge = document.getElementById('rail-status');
-    const card = document.getElementById('railway-card');
-    
-    if (!html) {
-        badge.innerText = "UNKNOWN";
-        return;
-    }
-
-    // 簡易的な判定ロジック: "平常" という文字が含まれていればOK
-    // Yahoo路線情報の構造に依存するため、将来的に動かなくなる可能性あり
+    if (!html) { badge.innerText = "UNKNOWN"; return; }
     if (html.includes('平常運転') || html.includes('平常どおり')) {
-        badge.innerText = "● NORMAL";
-        badge.style.color = "var(--c-good)";
-        badge.style.background = "rgba(34, 197, 94, 0.2)";
-    } else if (html.includes('遅延') || html.includes('見合わせ') || html.includes('運休')) {
-        badge.innerText = "● DELAY / INFO";
-        badge.style.color = "var(--c-warn)";
-        badge.style.background = "rgba(239, 68, 68, 0.2)";
+        badge.innerText = "● NORMAL"; badge.style.color = "var(--c-good)"; badge.style.background = "rgba(34, 197, 94, 0.2)";
     } else {
-        badge.innerText = "INFO";
+        badge.innerText = "● ALERT"; badge.style.color = "var(--c-warn)"; badge.style.background = "rgba(239, 68, 68, 0.2)";
     }
   }
 
-  /* --- News --- */
-  async function initNews() {
-    const techFeeds = [{ name: 'はてなIT', url: 'https://b.hatena.ne.jp/hotentry/it.rss' }];
-    // ニュース取得ロジック（簡略化）
-    const res = await fetchWithRetry(techFeeds[0].url);
-    if(res) {
-        const xml = new DOMParser().parseFromString(res, "text/xml");
-        const item = xml.querySelector("item");
-        if(item) {
-            document.getElementById('tech-title').innerText = item.querySelector("title").textContent;
-            document.getElementById('tech-src').innerText = "SOURCE: HATENA IT";
-            document.getElementById('news-tech').onclick = () => window.open(item.querySelector("link").textContent, '_blank');
-        }
+  /* --- Disaster Monitor --- */
+  async function initDisaster() {
+    // NHK社会RSSを使って「地震」「震度」「津波」「警報」をチェック
+    const items = await fetchRSS('https://www3.nhk.or.jp/rss/news/cat1.xml'); 
+    const badge = document.getElementById('disaster-status');
+    
+    if (!items || items.length === 0) { badge.innerText = "UNKNOWN"; return; }
+    
+    // キーワードチェック
+    const keywords = ["震度", "地震", "津波", "警報", "避難"];
+    const alertItem = items.find(i => keywords.some(k => i.t.includes(k)));
+    
+    if (alertItem) {
+        badge.innerText = "● WARNING"; 
+        badge.style.color = "var(--c-warn)"; 
+        badge.style.background = "rgba(239, 68, 68, 0.2)";
+        // 災害カードのタイトルを直近の警告ニュースにする
+        document.querySelector('#disaster-card .status-main').innerText = "警戒情報あり";
+        document.querySelector('#disaster-card .status-main').style.fontSize = "1rem";
+    } else {
+        badge.innerText = "● NO ALERTS"; 
+        badge.style.color = "var(--c-good)"; 
+        badge.style.background = "rgba(34, 197, 94, 0.2)";
     }
+  }
+
+  /* --- News & News Rotation --- */
+  async function initNews() {
+    const feeds1 = [{ name: 'Tech', url: 'https://b.hatena.ne.jp/hotentry/it.rss' }];
+    const feeds2 = [{ name: 'Trend', url: 'https://news.yahoo.co.jp/rss/topics/top-picks.xml' }]; // Yahooトピックス
+    
+    const setupFeed = async (feeds, titleId, srcId, cardId) => {
+      const items = await fetchRSS(feeds[0].url);
+      if(items && items.length > 0) {
+        let idx = 0;
+        const rotate = () => {
+          document.getElementById(titleId).innerText = items[idx].t;
+          document.getElementById(srcId).innerText = "SOURCE: " + feeds[0].name;
+          document.getElementById(cardId).onclick = () => window.open(items[idx].l, '_blank');
+          idx = (idx + 1) % items.length;
+        };
+        rotate(); setInterval(rotate, 10000);
+      }
+    };
+    setupFeed(feeds1, 'tech-title', 'tech-src', 'news-tech');
+    setupFeed(feeds2, 'trend-title', 'trend-src', 'news-trend');
   }
 
   /* --- Weather --- */
@@ -337,7 +379,7 @@
       windowResizeDelay: 100
     });
     cal.render(); 
-    tick(); setInterval(tick, 1000); initNews(); initWeather(); initRailway();
+    tick(); setInterval(tick, 1000); initNews(); initWeather(); initRailway(); initDisaster();
   });
 </script>
 </body>
