@@ -3,70 +3,76 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Responsive Digital Dashboard</title>
+  <title>Elite Fixed Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap');
     :root { --bg: #000000; --panel: #111111; --text: #ffffff; --sub: #888888; --accent: #3b82f6; --border: #222222; }
     * { box-sizing: border-box; }
+    
     body {
-      margin: 0; padding: 15px; height: 100vh; overflow: hidden; background: var(--bg); color: var(--text);
-      font-family: 'Inter', sans-serif; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr 1fr; gap: 15px;
+      margin: 0; padding: 20px; height: 100vh; overflow: hidden; background: var(--bg); color: var(--text);
+      font-family: 'Inter', sans-serif;
+      display: grid;
+      /* 左40%：中央30%：右30% で厳格に固定 */
+      grid-template-columns: 40% 30% 30%;
+      gap: 20px;
     }
-    /* 全てのカードの基本設定 */
-    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 
-    /* --- 左カラム：時計とカレンダー --- */
-    .col-left { grid-row: 1 / 4; display: flex; flex-direction: column; gap: 15px; }
-    .clock-card { flex: 0 0 auto; justify-content: center; align-items: center; text-align: center; }
-    #date-display { font-size: 1.2rem; font-weight: 900; color: var(--accent); margin-bottom: 5px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+
+    /* --- 左カラム：崩れないデジタルクロック --- */
+    .col-left { display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
+    .clock-container { flex: 0 0 auto; padding: 10px 0; }
+    #date-display { font-size: 1.5rem; font-weight: 900; color: var(--accent); margin-bottom: 5px; }
     .digital-clock {
-      /* 画面幅に合わせてフォントサイズを自動調整（崩れ防止） */
-      font-size: clamp(4rem, 8vw, 9rem); font-weight: 900; line-height: 1; 
-      font-variant-numeric: tabular-nums; white-space: nowrap;
+      /* 画面幅に合わせてフォントサイズを制限（崩れ防止の核心） */
+      font-size: clamp(4rem, 8.5vw, 10rem); 
+      font-weight: 900; line-height: 0.9; 
+      font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: -5px;
     }
-    #calendar-card { flex: 1; }
+    #calendar-card { flex: 1; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); padding: 10px; }
 
-    /* --- 中央カラム：予定とToDo --- */
-    .col-center { grid-row: 1 / 4; display: flex; flex-direction: column; gap: 15px; }
+    /* --- リスト表示 --- */
+    h3 { margin: 0 0 15px 0; font-size: .75rem; letter-spacing: .2em; font-weight: 900; color: var(--sub); text-transform: uppercase; border-left: 4px solid var(--sub); padding-left: 10px; }
     .scroll-area { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
-    .item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; align-items: flex-start; }
-    .item-time { color: var(--accent); font-weight: 900; min-width: 50px; }
-    .todo-check { width: 20px; height: 20px; border: 2px solid var(--sub); border-radius: 4px; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+    .item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 1.05rem; align-items: flex-start; font-weight: 700; }
+    .item-time { color: var(--accent); min-width: 60px; font-weight: 900; }
+    .todo-check { width: 22px; height: 22px; border: 2px solid var(--sub); border-radius: 4px; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
 
     /* --- 右カラム：ニュースと天気 --- */
-    .col-right { grid-row: 1 / 4; display: flex; flex-direction: column; gap: 15px; }
-    .news-card { height: 160px; cursor: pointer; }
-    .news-title { font-size: 1rem; font-weight: 900; line-height: 1.5; margin-top: 5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .news-card { height: 165px; cursor: pointer; }
+    .news-title { font-size: 1.1rem; font-weight: 900; line-height: 1.6; color: #fff; margin-top: 8px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     .weather-card { height: 180px; justify-content: center; }
     #weather-main { display: flex; align-items: center; justify-content: space-around; }
-    #weather-temp { font-size: 3rem; font-weight: 900; }
-    #weather-icon { font-size: 3.5rem; }
-    #hourly-forecast { display: flex; justify-content: space-around; border-top: 1px solid var(--border); padding-top: 10px; font-size: 0.9rem; font-weight: 900; }
+    #weather-temp { font-size: 3.5rem; font-weight: 900; color: #fff; }
+    #weather-icon { font-size: 4rem; }
+    #hourly-forecast { display: flex; justify-content: space-around; border-top: 1px solid var(--border); padding-top: 15px; font-size: 1.1rem; color: #fff; font-weight: 900; }
 
-    h3 { margin: 0 0 10px 0; font-size: .7rem; letter-spacing: .15em; font-weight: 900; color: var(--sub); text-transform: uppercase; border-left: 3px solid var(--sub); padding-left: 8px; }
-    #auth-btn { background: #333; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 900; cursor: pointer; font-size: 0.7rem; }
-    ::-webkit-scrollbar { width: 4px; }
+    #auth-btn { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 900; cursor: pointer; font-size: 0.75rem; }
+    ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    #calendar { font-size: 0.95rem; }
+    .fc-daygrid-day-number { color: #fff !important; font-weight: 700; text-decoration: none !important; }
   </style>
 </head>
 <body>
 
 <div class="col-left">
-  <div class="card clock-card">
+  <div class="clock-container">
     <div id="date-display">2026.01.04 SUN</div>
-    <div class="digital-clock"><span id="h">00</span><span style="color:var(--sub)">:</span><span id="m">00</span></div>
+    <div class="digital-clock"><span id="h">00</span><span style="color:var(--sub); margin: 0 5px;">:</span><span id="m">00</span></div>
   </div>
   <div class="card" id="calendar-card"><div id="calendar"></div></div>
 </div>
 
-<div class="col-center">
-  <div class="card" style="flex: 1.2;">
+<div style="display: flex; flex-direction: column; gap: 20px;">
+  <div class="card" style="height: 40%;">
     <h3>TODAY'S SCHEDULE</h3>
     <div class="scroll-area" id="today-events"></div>
   </div>
-  <div class="card" style="flex: 2;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+  <div class="card" style="flex: 1;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
       <h3>GOOGLE TO-DO</h3>
       <button id="auth-btn" onclick="handleAuthClick()">LOGIN</button>
     </div>
@@ -74,22 +80,22 @@
   </div>
 </div>
 
-<div class="col-right">
+<div style="display: flex; flex-direction: column; gap: 20px;">
   <div class="card news-card" id="news-tech">
-    <div style="font-size:0.7rem; color:var(--accent); font-weight:900;" id="tech-src">TECH NEWS</div>
+    <div style="font-size:0.75rem; color:var(--accent); font-weight:900;" id="tech-src">TECH NEWS</div>
     <div class="news-title" id="tech-title">ニュース取得中...</div>
   </div>
   <div class="card news-card" id="news-trend">
-    <div style="font-size:0.7rem; color:var(--accent); font-weight:900;" id="trend-src">TREND NEWS</div>
+    <div style="font-size:0.75rem; color:var(--accent); font-weight:900;" id="trend-src">TREND NEWS</div>
     <div class="news-title" id="trend-title">ニュース取得中...</div>
   </div>
   <div class="card weather-card">
     <div id="weather-main"><div id="weather-icon">--</div><div id="weather-temp">--°</div></div>
     <div id="hourly-forecast"></div>
   </div>
-  <div class="card" style="height: 80px; flex-direction: row; justify-content: space-around; align-items: center; border-color: #333;">
-    <div style="text-align:center;"><h3>NIKKEI</h3><b style="font-size:1.2rem;">39,450</b></div>
-    <div style="text-align:center;"><h3>USD/JPY</h3><b style="font-size:1.2rem;">149.12</b></div>
+  <div class="card" style="height: 85px; flex-direction: row; justify-content: space-around; align-items: center; border-color: #333;">
+    <div style="text-align:center;"><h3>NIKKEI</h3><b style="font-size:1.4rem;">39,450</b></div>
+    <div style="text-align:center;"><h3>USD/JPY</h3><b style="font-size:1.4rem;">149.12</b></div>
   </div>
 </div>
 
@@ -101,7 +107,7 @@
   const SCOPES = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks";
   let tokenClient, cal, currentTaskListId;
 
-  // 時計
+  // 時計更新
   function tick() {
     const now = new Date();
     document.getElementById('h').innerText = String(now.getHours()).padStart(2, '0');
@@ -110,7 +116,7 @@
     document.getElementById('date-display').innerText = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${w}`;
   }
 
-  // 強力RSSロジック
+  // RSS プロキシ巡回ロジック (現状維持)
   const proxyServices = [
     (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
     (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
@@ -118,10 +124,12 @@
   ];
   const techFeeds = [
     { name: 'はてなIT', url: 'https://b.hatena.ne.jp/hotentry/it.rss' },
-    { name: 'ITmedia', url: 'https://rss.itmedia.co.jp/rss/2.0/itmedia_all.xml' }
+    { name: 'ITmedia', url: 'https://rss.itmedia.co.jp/rss/2.0/itmedia_all.xml' },
+    { name: 'ギズモード', url: 'https://www.gizmodo.jp/index.xml' }
   ];
   const trendFeeds = [
     { name: 'NHKニュース', url: 'https://www.nhk.or.jp/rss/news/cat0.xml' },
+    { name: 'はてな話題', url: 'https://b.hatena.ne.jp/hotentry/all.rss' },
     { name: 'ねとらぼ', url: 'https://news.yahoo.co.jp/rss/media/it_nlab/all.xml' }
   ];
 
