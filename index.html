@@ -3,74 +3,56 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Airport Style Minimal Dashboard</title>
+  <title>Minimalist Pro Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap');
-    :root { --bg: #000; --panel: #111; --text: #fff; --sub: #666; --accent: #fff; --border: #222; }
+    :root { --bg: #0b0f14; --panel: #111827; --text: #e5e7eb; --sub: #6b7280; --accent: #3b82f6; --border: rgba(255,255,255,.06); }
     * { box-sizing: border-box; }
     body {
       margin: 0; padding: 20px; height: 100vh; overflow: hidden; background: var(--bg); color: var(--text);
-      font-family: 'Inter', sans-serif; display: grid; grid-template-columns: 4fr 3fr 3fr; gap: 20px;
+      font-family: 'Inter', sans-serif; display: grid; grid-template-columns: 4fr 3.2fr 2.8fr; gap: 20px;
     }
 
-    /* ログインボタン（右上に固定） */
-    #auth-btn {
-      position: fixed; top: 20px; right: 20px; z-index: 9999;
-      background: #fff; color: #000; border: none; padding: 10px 20px;
-      border-radius: 4px; font-weight: 900; cursor: pointer; font-size: 0.8rem;
-    }
+    #auth-btn { position: fixed; top: 20px; right: 20px; z-index: 9999; background: var(--accent); color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 900; cursor: pointer; }
 
     .sync-container { display: flex; flex-direction: column; height: 100%; gap: 20px; min-height: 0; }
-    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; min-height: 0; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 10px 25px rgba(0,0,0,.3); }
 
-    /* --- 空港風パタパタ時計 (Split-Flap) --- */
-    .clock-container { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-    .flip-card {
-      position: relative; width: 100px; height: 150px; background: #1a1a1a;
-      border-radius: 6px; font-size: 10rem; line-height: 150px; text-align: center; font-weight: 900;
-    }
-    /* 中央の溝 */
-    .flip-card::after {
-      content: ""; position: absolute; top: 50%; left: 0; width: 100%; height: 2px;
-      background: #000; z-index: 10; transform: translateY(-50%);
-    }
-    .colon { font-size: 4rem; font-weight: 900; color: var(--sub); }
+    /* パタパタ時計 */
+    .clock-container { display: flex; gap: 12px; align-items: center; margin-bottom: 5px; }
+    .flip-card { position: relative; width: 130px; height: 160px; background: #0b1220; border-radius: 12px; font-size: 10rem; line-height: 160px; text-align: center; font-weight: 900; border: 1px solid rgba(255,255,255,.08); }
+    .flip-card::after { content: ""; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: rgba(0,0,0,0.6); z-index: 10; }
+    .colon { font-size: 4rem; font-weight: 900; color: var(--sub); padding-bottom: 10px; }
+    .flap-move { animation: flap-down 0.5s ease-in-out; transform-origin: center; }
+    @keyframes flap-down { 0% { transform: rotateX(0deg); } 50% { transform: rotateX(-90deg); opacity: 0.5; } 100% { transform: rotateX(0deg); } }
 
-    /* パタパタアニメーション */
-    .flap-move { animation: flap-down 0.6s ease-in-out; }
-    @keyframes flap-down {
-      0% { transform: perspective(400px) rotateX(0deg); }
-      50% { transform: perspective(400px) rotateX(-90deg); }
-      100% { transform: perspective(400px) rotateX(0deg); }
-    }
-
-    /* --- カレンダー・予定 --- */
-    #calendar { flex-grow: 1; font-size: 0.8rem; }
-    .fc-theme-standard td, .fc-theme-standard th { border: 1px solid var(--border) !important; }
-    .fc-daygrid-day-number { color: var(--sub) !important; text-decoration: none !important; }
-
-    /* --- 予定・ToDoリスト --- */
-    .list-title { font-size: 0.75rem; color: var(--sub); letter-spacing: 2px; margin-bottom: 15px; font-weight: 900; }
-    .scroll-area { flex-grow: 1; overflow-y: auto; }
-    .item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; line-height: 1.4; }
-    .item-time { font-weight: 900; color: var(--sub); min-width: 60px; }
-    .item-dot { width: 6px; height: 6px; background: var(--sub); border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
-
-    /* --- 右カラム：ニュース・天気 --- */
-    .news-box { height: 180px; cursor: pointer; }
-    .news-title { font-size: 1.1rem; font-weight: 700; line-height: 1.5; margin-top: 10px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+    /* リスト表示 */
+    h3 { margin: 0 0 12px 0; font-size: .7rem; letter-spacing: .15em; font-weight: 900; color: var(--sub); }
+    .scroll-area { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
+    .item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; align-items: flex-start; }
+    .item-time { font-weight: 900; color: var(--accent); min-width: 50px; }
     
-    .weather-box { flex-grow: 1; align-items: center; justify-content: center; text-align: center; }
-    #weather-temp { font-size: 4rem; font-weight: 900; }
-    #weather-icon { font-size: 5rem; }
+    /* タスク完了チェックボックス */
+    .todo-check { width: 18px; height: 18px; border: 2px solid var(--sub); border-radius: 4px; cursor: pointer; flex-shrink: 0; margin-top: 2px; transition: 0.2s; }
+    .todo-check:hover { border-color: var(--accent); background: rgba(59,130,246,0.1); }
+    .todo-text { font-weight: 700; line-height: 1.4; }
 
-    .kpi-box { height: 100px; flex-direction: row; justify-content: space-around; align-items: center; border-color: var(--sub); }
-    .kpi-item { text-align: center; }
-    .kpi-val { font-size: 1.3rem; font-weight: 900; display: block; }
+    /* ニュースエリア（テック・エンタメ） */
+    .news-card { height: 160px; cursor: pointer; }
+    .news-title { font-size: 1rem; font-weight: 900; line-height: 1.5; margin-top: 8px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    
+    /* 天気のスリム化 */
+    .weather-slim { height: 100px; flex-direction: row; align-items: center; justify-content: space-between; padding: 0 25px; }
+    #weather-main { display: flex; align-items: center; gap: 10px; }
+    #weather-temp { font-size: 2.5rem; font-weight: 900; }
+    #weather-icon { font-size: 3rem; }
 
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    .kpi-box { height: 90px; flex-direction: row; justify-content: space-around; align-items: center; }
+    .kpi-val { font-size: 1.2rem; font-weight: 900; display: block; margin-top: 4px; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
   </style>
 </head>
 <body>
@@ -79,7 +61,7 @@
 
 <div class="sync-container">
   <div>
-    <div id="date" style="font-size: 1.2rem; font-weight: 900; color: var(--sub); margin-bottom: 5px;">0000.00.00</div>
+    <div id="date" style="font-size: 1.4rem; font-weight: 900; color: var(--accent); margin-bottom: 8px;">0000.00.00</div>
     <div class="clock-container">
       <div class="flip-card" id="h1">0</div><div class="flip-card" id="h2">0</div>
       <div class="colon">:</div>
@@ -91,31 +73,34 @@
 
 <div class="sync-container">
   <div class="card" style="height: 35%;">
-    <div class="list-title">TODAY'S SCHEDULE</div>
-    <div class="scroll-area" id="today-events">
-      <div style="color:var(--sub)">ログインして同期してください</div>
-    </div>
+    <h3>TODAY'S SCHEDULE</h3>
+    <div class="scroll-area" id="today-events"><div style="color:var(--sub)">同期中...</div></div>
   </div>
   <div class="card" style="flex-grow: 1;">
-    <div class="list-title">GOOGLE TO-DO LIST</div>
+    <h3>GOOGLE TO-DO LIST</h3>
     <div class="scroll-area" id="todo-list"></div>
   </div>
 </div>
 
 <div class="sync-container">
-  <div class="card news-box" id="news-container">
-    <div class="list-title" id="news-source">NEWS</div>
-    <div class="news-title" id="news-title">Loading News...</div>
+  <div class="card news-card" id="news-tech">
+    <h3>TECHNOLOGY</h3>
+    <div class="news-title" id="tech-title">Loading...</div>
   </div>
-  <div class="card weather-box">
-    <div class="list-title">CURRENT WEATHER</div>
-    <div id="weather-icon">--</div>
-    <div id="weather-temp">--°C</div>
-    <div id="hourly-forecast" style="display:flex; gap:15px; margin-top:10px; color:var(--sub); font-size:0.8rem;"></div>
+  <div class="card news-card" id="news-ent">
+    <h3>ENTERTAINMENT</h3>
+    <div class="news-title" id="ent-title">Loading...</div>
+  </div>
+  <div class="card weather-slim">
+    <div id="weather-main">
+      <span id="weather-icon">☀️</span>
+      <span id="weather-temp">--°</span>
+    </div>
+    <div id="hourly-forecast" style="display:flex; gap:12px; font-size:0.75rem; color:var(--sub);"></div>
   </div>
   <div class="card kpi-box">
-    <div class="kpi-item"><span class="list-title">NIKKEI</span><span class="kpi-val">39,450</span></div>
-    <div class="kpi-item"><span class="list-title">USD/JPY</span><span class="kpi-val">149.12</span></div>
+    <div style="text-align:center;"><h3>NIKKEI</h3><span class="kpi-val">39,450</span></div>
+    <div style="text-align:center;"><h3>USD/JPY</h3><span class="kpi-val">149.12</span></div>
   </div>
 </div>
 
@@ -124,10 +109,9 @@
 
 <script>
   const CLIENT_ID = '617076249682-lepri9n545siusvvnrf0cr538s9o5o07.apps.googleusercontent.com';
-  const SCOPES = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks.readonly";
-  let tokenClient, cal;
+  const SCOPES = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks"; // 編集権限追加
+  let tokenClient, cal, currentTaskListId;
 
-  // --- フリップ時計ロジック ---
   function updateFlip(id, val) {
     const el = document.getElementById(id);
     if (el.innerText !== val) {
@@ -140,14 +124,13 @@
 
   function tick() {
     const now = new Date();
-    const h = String(now.getHours()).padStart(2, '0');
-    const m = String(now.getMinutes()).padStart(2, '0');
-    updateFlip('h1', h[0]); updateFlip('h2', h[1]);
-    updateFlip('m1', m[0]); updateFlip('m2', m[1]);
+    updateFlip('h1', String(now.getHours()).padStart(2,'0')[0]);
+    updateFlip('h2', String(now.getHours()).padStart(2,'0')[1]);
+    updateFlip('m1', String(now.getMinutes()).padStart(2,'0')[0]);
+    updateFlip('m2', String(now.getMinutes()).padStart(2,'0')[1]);
     document.getElementById('date').innerText = now.toLocaleDateString('ja-JP', {year:'numeric', month:'2-digit', day:'2-digit', weekday:'short'}).toUpperCase();
   }
 
-  // --- Google API 連携 ---
   function gapiLoaded() { gapi.load('client', async () => { await gapi.client.init({ discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest", "https://www.googleapis.com/discovery/v1/apis/tasks/v1/rest"] }); }); }
   function gisLoaded() {
     tokenClient = google.accounts.oauth2.initTokenClient({
@@ -165,53 +148,61 @@
     const events = res.result.items.map(e => ({ title: e.summary, start: e.start.dateTime || e.start.date }));
     cal.removeAllEvents(); cal.addEventSource(events);
     
-    // 今日の予定リスト
     const todayStr = new Date().toISOString().split('T')[0];
-    const todayEvents = events.filter(e => e.start.startsWith(todayStr));
-    document.getElementById('today-events').innerHTML = todayEvents.map(e => `
-      <div class="item"><div class="item-time">${e.start.includes('T') ? e.start.slice(11,16) : 'ALL DAY'}</div><div>${e.title}</div></div>
+    document.getElementById('today-events').innerHTML = events.filter(e => e.start.startsWith(todayStr)).map(e => `
+      <div class="item"><div class="item-time">${e.start.includes('T') ? e.start.slice(11,16) : 'ALL'}</div><div class="todo-text">${e.title}</div></div>
     `).join('') || '<div style="color:var(--sub)">予定なし</div>';
 
-    // To-Do
-    const taskRes = await gapi.client.tasks.tasklists.list();
-    const tasks = await gapi.client.tasks.tasks.list({ tasklist: taskRes.result.items[0].id });
-    document.getElementById('todo-list').innerHTML = (tasks.result.items || []).filter(t => t.status !== 'completed').map(t => `<div class="item"><div class="item-dot"></div><div>${t.title}</div></div>`).join('');
-  }
-
-  // --- ニュース (NHK & Yahoo & ITmedia) ---
-  const newsRSS = [
-    { name: "NHK NEWS", url: "https://www3.nhk.or.jp/rss/news/cat0.xml" },
-    { name: "YAHOO TOPICS", url: "https://news.yahoo.co.jp/rss/topics/top-picks.xml" },
-    { name: "ITMEDIA AI+", url: "https://rss.itmedia.co.jp/rss/2.0/aiplus.xml" }
-  ];
-  async function initNews() {
-    let allNews = [];
-    for (let source of newsRSS) {
-      try {
-        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(source.url)}`);
-        const data = await res.json();
-        data.items.forEach(item => allNews.push({ title: item.title, link: item.link, source: source.name }));
-      } catch (e) {}
+    const taskListRes = await gapi.client.tasks.tasklists.list();
+    if (taskListRes.result.items) {
+      currentTaskListId = taskListRes.result.items[0].id;
+      const tasks = await gapi.client.tasks.tasks.list({ tasklist: currentTaskListId, showCompleted: false });
+      document.getElementById('todo-list').innerHTML = (tasks.result.items || []).map(t => `
+        <div class="item">
+          <div class="todo-check" onclick="completeTask('${t.id}')"></div>
+          <div class="todo-text">${t.title}</div>
+        </div>
+      `).join('');
     }
-    let idx = 0;
-    const rotate = () => {
-      const item = allNews[idx];
-      document.getElementById('news-title').innerText = item.title;
-      document.getElementById('news-source').innerText = `SOURCE: ${item.source}`;
-      document.getElementById('news-container').onclick = () => window.open(item.link, '_blank');
-      idx = (idx + 1) % allNews.length;
-    };
-    if (allNews.length) { rotate(); setInterval(rotate, 10000); }
   }
 
-  // --- 天気 ---
+  async function completeTask(taskId) {
+    await gapi.client.tasks.tasks.patch({ tasklist: currentTaskListId, task: taskId, resource: { status: 'completed' } });
+    loadData(); // リロードしてリストを更新
+  }
+
+  async function initNews() {
+    const feeds = [
+      { id: 'tech', url: 'https://rss.itmedia.co.jp/rss/2.0/aiplus.xml' },
+      { id: 'ent', url: 'https://news.yahoo.co.jp/rss/topics/entertainment.xml' }
+    ];
+    for (let f of feeds) {
+      const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(f.url)}`);
+      const data = await res.json();
+      let idx = 0;
+      const update = () => {
+        const item = data.items[idx];
+        document.getElementById(`${f.id}-title`).innerText = item.title;
+        document.getElementById(`news-${f.id}`).onclick = () => window.open(item.link, '_blank');
+        idx = (idx + 1) % data.items.length;
+      };
+      update(); setInterval(update, 12000);
+    }
+  }
+
   async function initWeather() {
     navigator.geolocation.getCurrentPosition(async (pos) => {
       const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&hourly=temperature_2m,weathercode&current_weather=true&timezone=Asia%2FTokyo`);
       const data = await res.json();
       const icons = { 0:"☀️", 1:"🌤", 2:"☁️", 3:"☁️", 61:"☔️" };
       document.getElementById('weather-icon').innerText = icons[data.current_weather.weathercode] || "☁️";
-      document.getElementById('weather-temp').innerText = Math.round(data.current_weather.temperature) + "°C";
+      document.getElementById('weather-temp').innerText = Math.round(data.current_weather.temperature) + "°";
+      
+      let forecastHTML = '';
+      for(let i=3; i<=9; i+=3) {
+        forecastHTML += `<div>${data.hourly.time[i].slice(11,16)} ${icons[data.hourly.weathercode[i]]||"☁️"}${Math.round(data.hourly.temperature_2m[i])}°</div>`;
+      }
+      document.getElementById('hourly-forecast').innerHTML = forecastHTML;
     });
   }
 
