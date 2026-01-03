@@ -3,133 +3,101 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Modern Digital Dashboard</title>
+  <title>Ultimate RSS Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap');
-    
-    :root {
-      --bg: #050505;
-      --panel: #121212;
-      --text: #ffffff;
-      --sub: #888888;
-      --accent: #3b82f6;
-      --border: #222222;
-    }
-
+    :root { --bg: #0b0f14; --panel: #111827; --text: #e5e7eb; --sub: #6b7280; --bright: #ffffff; --accent: #3b82f6; --border: rgba(255,255,255,.08); }
     * { box-sizing: border-box; }
     body {
-      margin: 0; padding: 25px; height: 100vh; overflow: hidden;
-      background: var(--bg); color: var(--text);
-      font-family: 'Inter', sans-serif;
-      display: grid;
-      grid-template-columns: 4fr 3fr 3fr;
-      gap: 25px;
+      margin: 0; padding: 20px; height: 100vh; overflow: hidden; background: var(--bg); color: var(--text);
+      font-family: 'Inter', sans-serif; display: grid; grid-template-columns: 4fr 3.2fr 2.8fr; gap: 20px;
     }
 
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
+    #auth-btn { background: #fff; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 900; cursor: pointer; font-size: 0.7rem; }
+    .sync-container { display: flex; flex-direction: column; height: 100%; gap: 20px; min-height: 0; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; min-height: 0; }
 
-    /* --- デジタル時計エリア（電卓風・崩れない） --- */
-    .time-header { margin-bottom: 10px; }
-    #date-display { font-size: 1.6rem; font-weight: 900; color: var(--accent); letter-spacing: 1px; }
-    
-    .digital-clock {
-      font-size: 11rem;
-      font-weight: 900;
-      line-height: 1;
-      letter-spacing: -4px;
-      font-variant-numeric: tabular-nums; /* 数字の幅を固定してガタつき防止 */
-      display: flex;
-      align-items: baseline;
-    }
-    .digital-clock span { color: var(--text); }
-    .digital-clock .colon { color: var(--sub); margin: 0 5px; font-size: 8rem; vertical-align: middle; }
+    /* パタパタ時計 */
+    .clock-container { display: flex; gap: 12px; align-items: center; margin-bottom: 5px; }
+    .flip-unit { position: relative; width: 130px; height: 160px; background: #0b1220; border-radius: 12px; font-size: 11rem; line-height: 160px; text-align: center; font-weight: 900; border: 1px solid rgba(255,255,255,.1); perspective: 1000px; }
+    .flap { position: absolute; width: 100%; height: 100%; left: 0; top: 0; background: #0b1220; border-radius: 12px; backface-visibility: hidden; }
+    .flap.top { clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%); z-index: 10; border-bottom: 1px solid rgba(0,0,0,0.5); }
+    .flap.bottom { clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%); z-index: 5; }
+    .flap.moving { z-index: 15; transform-origin: center; }
+    .colon { font-size: 5rem; font-weight: 900; color: var(--sub); padding-bottom: 15px; }
 
-    /* --- スケジュール & ToDo --- */
-    h3 { margin: 0 0 15px 0; font-size: 0.8rem; letter-spacing: 2px; font-weight: 900; color: var(--sub); text-transform: uppercase; border-left: 4px solid var(--accent); padding-left: 10px; }
-    .scroll-area { flex-grow: 1; overflow-y: auto; padding-right: 8px; }
-    
-    .item { display: flex; gap: 15px; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
-    .item-time { font-weight: 900; color: var(--accent); min-width: 60px; font-size: 1rem; }
-    .item-text { font-weight: 700; font-size: 1rem; line-height: 1.4; }
-    
-    .todo-check { width: 22px; height: 22px; border: 2px solid var(--sub); border-radius: 4px; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+    /* リスト・ニュース */
+    h3 { margin: 0 0 10px 0; font-size: .75rem; letter-spacing: .15em; font-weight: 900; color: var(--sub); text-transform: uppercase; }
+    .scroll-area { flex-grow: 1; overflow: auto; padding-right: 5px; }
+    .item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; align-items: flex-start; }
+    .item-time { font-weight: 900; color: var(--accent); min-width: 50px; }
+    .news-card { height: 165px; cursor: pointer; }
+    .news-title { font-size: 1.05rem; font-weight: 900; line-height: 1.5; margin-top: 5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: #fff; }
+    .source-label { font-size: 0.7rem; color: var(--accent); font-weight: 900; margin-bottom: 4px; }
 
-    /* --- ニュースエリア（安定重視） --- */
-    .news-title { font-size: 1.2rem; font-weight: 900; line-height: 1.6; color: #fff; margin-top: 10px; }
-    #news-source { font-size: 0.75rem; color: var(--accent); font-weight: 900; }
+    /* 天気 */
+    .weather-slim { height: 75px; flex-direction: row; align-items: center; justify-content: space-between; padding: 0 20px; }
+    #weather-temp { font-size: 2.5rem; font-weight: 900; color: #fff; }
+    #weather-icon { font-size: 3rem; }
+    #hourly-forecast { display: flex; gap: 18px; font-size: 0.95rem; color: #fff; font-weight: 900; }
 
-    /* --- 天気エリア（視認性重視） --- */
-    .weather-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
-    #weather-temp { font-size: 3.5rem; font-weight: 900; }
-    #weather-icon { font-size: 4rem; }
-    .forecast-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; border-top: 1px solid var(--border); padding-top: 15px; }
-    .forecast-item { text-align: center; font-weight: 900; font-size: 1rem; color: #eee; }
-
-    /* --- 共通：ログインボタン --- */
-    #auth-btn { background: var(--accent); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 900; cursor: pointer; font-size: 0.8rem; }
-    
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-
-    #calendar { font-size: 0.9rem; }
-    .fc-daygrid-day-number { color: #aaa !important; font-weight: 700; text-decoration: none !important; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
   </style>
 </head>
 <body>
 
-<div style="display: flex; flex-direction: column; gap: 25px;">
-  <div class="time-header">
-    <div id="date-display">2026.01.04 SUN</div>
-    <div class="digital-clock">
-      <span id="h-display">00</span><span class="colon">:</span><span id="m-display">00</span>
+<div class="sync-container">
+  <div>
+    <div id="date" style="font-size: 1.5rem; font-weight: 900; color: var(--accent); margin-bottom: 5px;">2026.01.04 SUN</div>
+    <div class="clock-container">
+      <div class="flip-unit" id="h-unit">
+        <div class="flap top" id="h-next">00</div>
+        <div class="flap bottom" id="h-curr">00</div>
+        <div class="flap moving" id="h-move">00</div>
+      </div>
+      <div class="colon">:</div>
+      <div class="flip-unit" id="m-unit">
+        <div class="flap top" id="m-next">00</div>
+        <div class="flap bottom" id="m-curr">00</div>
+        <div class="flap moving" id="m-move">00</div>
+      </div>
     </div>
   </div>
-  <div class="card" style="flex-grow: 1;"><div id="calendar"></div></div>
+  <div class="card" style="flex:1;"><div id="calendar"></div></div>
 </div>
 
-<div style="display: flex; flex-direction: column; gap: 25px;">
-  <div class="card" style="height: 40%;">
+<div class="sync-container">
+  <div class="card" style="height: 38%;">
     <h3>TODAY'S SCHEDULE</h3>
-    <div class="scroll-area" id="schedule-list">
-      <div style="color:var(--sub); font-weight:700;">Login to sync your events</div>
-    </div>
+    <div class="scroll-area" id="today-events"><div style="color:var(--sub)">同期中...</div></div>
   </div>
   <div class="card" style="flex-grow: 1;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
       <h3>GOOGLE TO-DO</h3>
-      <button id="auth-btn" onclick="handleAuthClick()">GOOGLE LOGIN</button>
+      <button id="auth-btn" onclick="handleAuthClick()">LOGIN</button>
     </div>
     <div class="scroll-area" id="todo-list"></div>
   </div>
 </div>
 
-<div style="display: flex; flex-direction: column; gap: 25px;">
-  <div class="card" style="height: 220px; justify-content: center; cursor: pointer;" id="news-card">
-    <div id="news-source">LOADING SOURCE...</div>
-    <div class="news-title" id="news-title">Fetching the latest headlines...</div>
+<div class="sync-container">
+  <div class="card news-card" id="news-tech">
+    <div class="source-label" id="tech-source">TECH NEWS</div>
+    <div class="news-title" id="tech-title">ニュースを取得中...</div>
   </div>
-  
-  <div class="card" style="flex-grow: 1;">
-    <h3>WEATHER</h3>
-    <div class="weather-row">
-      <div id="weather-temp">--°</div>
-      <div id="weather-icon">--</div>
-    </div>
-    <div class="forecast-grid" id="forecast-area"></div>
+  <div class="card news-card" id="news-trend">
+    <div class="source-label" id="trend-source">TREND NEWS</div>
+    <div class="news-title" id="trend-title">ニュースを取得中...</div>
   </div>
-
-  <div class="card" style="height: 100px; flex-direction: row; justify-content: space-around; align-items: center;">
-    <div style="text-align:center;"><h3>NIKKEI</h3><b style="font-size:1.4rem;">39,450</b></div>
-    <div style="text-align:center;"><h3>USD/JPY</h3><b style="font-size:1.4rem;">149.12</b></div>
+  <div class="card weather-slim">
+    <div style="display:flex; align-items:center; gap:10px;"><span id="weather-icon">--</span><span id="weather-temp">--°</span></div>
+    <div id="hourly-forecast"></div>
+  </div>
+  <div class="card" style="height: 80px; flex-direction: row; justify-content: space-around; align-items: center;">
+    <div style="text-align:center;"><h3>NIKKEI</h3><b style="font-size:1.3rem;">39,450</b></div>
+    <div style="text-align:center;"><h3>USD/JPY</h3><b style="font-size:1.3rem;">149.12</b></div>
   </div>
 </div>
 
@@ -141,14 +109,36 @@
   const SCOPES = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks";
   let tokenClient, cal, currentTaskListId;
 
-  // --- シンプル・安定した時計 ---
-  function updateClock() {
+  // --- プロキシ設定 ---
+  const proxyServices = [
+    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`
+  ];
+
+  // --- 時計 ---
+  async function turnFlap(unitPrefix, nextVal) {
+    const nextEl = document.getElementById(unitPrefix + '-next');
+    const currEl = document.getElementById(unitPrefix + '-curr');
+    const moveEl = document.getElementById(unitPrefix + '-move');
+    if (currEl.innerText === nextVal) return;
+    nextEl.innerText = nextVal;
+    let anim1 = moveEl.animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-90deg)' }], { duration: 300, fill: 'forwards' });
+    await anim1.finished;
+    moveEl.innerText = nextVal;
+    moveEl.style.transform = 'rotateX(90deg)';
+    let anim2 = moveEl.animate([{ transform: 'rotateX(90deg)' }, { transform: 'rotateX(0deg)' }], { duration: 300, fill: 'forwards' });
+    await anim2.finished;
+    currEl.innerText = nextVal;
+  }
+
+  function tick() {
     const now = new Date();
-    document.getElementById('h-display').innerText = String(now.getHours()).padStart(2, '0');
-    document.getElementById('m-display').innerText = String(now.getMinutes()).padStart(2, '0');
-    
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    turnFlap('h', h); turnFlap('m', m);
     const w = ["SUN","MON","TUE","WED","THU","FRI","SAT"][now.getDay()];
-    document.getElementById('date-display').innerText = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${w}`;
+    document.getElementById('date').innerText = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${w}`;
   }
 
   // --- Google API ---
@@ -168,67 +158,84 @@
     const res = await gapi.client.calendar.events.list({ calendarId: 'primary', timeMin: new Date().toISOString(), singleEvents: true, orderBy: 'startTime' });
     const events = res.result.items.map(e => ({ title: e.summary, start: e.start.dateTime || e.start.date }));
     cal.removeAllEvents(); cal.addEventSource(events);
-    
-    const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+    const todayStr = new Date().toLocaleDateString('en-CA');
     const todayEvents = events.filter(e => e.start.startsWith(todayStr));
-    document.getElementById('schedule-list').innerHTML = todayEvents.map(e => `
-      <div class="item"><div class="item-time">${e.start.includes('T') ? e.start.slice(11,16) : 'ALL'}</div><div class="item-text">${e.title}</div></div>
-    `).join('') || '<div style="color:var(--sub); font-weight:700;">No events today</div>';
-
+    document.getElementById('today-events').innerHTML = todayEvents.map(e => `<div class="item"><div class="item-time">${e.start.includes('T') ? e.start.slice(11,16) : 'ALL'}</div><div>${e.title}</div></div>`).join('') || '<div style="color:var(--sub)">No events today</div>';
     const taskListRes = await gapi.client.tasks.tasklists.list();
     if (taskListRes.result.items) {
       currentTaskListId = taskListRes.result.items[0].id;
       const tasks = await gapi.client.tasks.tasks.list({ tasklist: currentTaskListId, showCompleted: false });
-      document.getElementById('todo-list').innerHTML = (tasks.result.items || []).map(t => `
-        <div class="item">
-          <div class="todo-check" onclick="completeTask('${t.id}')"></div>
-          <div class="item-text">${t.title}</div>
-        </div>
-      `).join('');
+      document.getElementById('todo-list').innerHTML = (tasks.result.items || []).map(t => `<div class="item"><div class="todo-check" style="width:18px;height:18px;border:2px solid var(--sub);border-radius:4px;cursor:pointer;" onclick="completeTask('${t.id}')"></div><div>${t.title}</div></div>`).join('');
     }
   }
 
   async function completeTask(taskId) {
     await gapi.client.tasks.tasks.patch({ tasklist: currentTaskListId, task: taskId, resource: { status: 'completed' } });
-    loadData(); 
+    loadData();
   }
 
-  // --- Yahoo IT ニュース（安定版） ---
+  // --- RSS ニュース取得ロジック (統合) ---
+  const techFeeds = [
+    { name: 'はてなブックマーク (IT)', url: 'https://b.hatena.ne.jp/hotentry/it.rss' },
+    { name: 'ITmedia 総合', url: 'https://rss.itmedia.co.jp/rss/2.0/itmedia_all.xml' },
+    { name: 'ギズモード', url: 'https://www.gizmodo.jp/index.xml' }
+  ];
+  const trendFeeds = [
+    { name: 'NHK ニュース', url: 'https://www.nhk.or.jp/rss/news/cat0.xml' },
+    { name: 'はてなブックマーク (話題)', url: 'https://b.hatena.ne.jp/hotentry/all.rss' },
+    { name: 'ねとらぼ', url: 'https://news.yahoo.co.jp/rss/media/it_nlab/all.xml' }
+  ];
+
+  async function fetchWithRetry(feed) {
+    for (const getProxyUrl of proxyServices) {
+      try {
+        const response = await fetch(getProxyUrl(feed.url));
+        if (!response.ok) continue;
+        const text = await response.text();
+        const xml = new DOMParser().parseFromString(text, "text/xml");
+        if (xml.querySelector("parsererror")) continue;
+        const items = Array.from(xml.querySelectorAll("item")).map(item => ({
+          title: item.querySelector("title")?.textContent || "No Title",
+          link: item.querySelector("link")?.textContent || item.getAttribute("rdf:about") || "#"
+        }));
+        if (items.length > 0) return { name: feed.name, items: items.slice(0, 10) };
+      } catch (e) {}
+    }
+    return null;
+  }
+
   async function initNews() {
-    try {
-      const rssUrl = "https://news.yahoo.co.jp/rss/topics/it.xml";
-      const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&t=${Date.now()}`);
-      const data = await res.json();
-      if(!data.items) throw new Error();
-      
+    const cycle = async (feeds, titleId, sourceId, cardId) => {
+      let allItems = [];
+      for (let f of feeds) {
+        const res = await fetchWithRetry(f);
+        if (res) res.items.forEach(i => allItems.push({ t: i.title, l: i.link, s: res.name }));
+      }
+      if (allItems.length === 0) return;
       let idx = 0;
       const rotate = () => {
-        const item = data.items[idx];
-        document.getElementById('news-title').innerText = item.title;
-        document.getElementById('news-source').innerText = "YAHOO! JAPAN IT NEWS";
-        document.getElementById('news-card').onclick = () => window.open(item.link, '_blank');
-        idx = (idx + 1) % data.items.length;
+        const item = allItems[idx];
+        document.getElementById(titleId).innerText = item.t;
+        document.getElementById(sourceId).innerText = "SOURCE: " + item.s;
+        document.getElementById(cardId).onclick = () => window.open(item.l, '_blank');
+        idx = (idx + 1) % allItems.length;
       };
-      rotate(); setInterval(rotate, 15000);
-    } catch(e) {
-      document.getElementById('news-title').innerText = "Unable to load news. Check connection.";
-    }
+      rotate(); setInterval(rotate, 12000);
+    };
+    cycle(techFeeds, 'tech-title', 'tech-source', 'news-tech');
+    cycle(trendFeeds, 'trend-title', 'trend-source', 'news-trend');
   }
 
-  // --- 天気 ---
   async function initWeather() {
     navigator.geolocation.getCurrentPosition(async (pos) => {
       const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&hourly=temperature_2m,weathercode&current_weather=true&timezone=Asia%2FTokyo`);
       const data = await res.json();
-      const iconMap = { 0:"☀️", 1:"🌤", 2:"☁️", 3:"☁️", 61:"☔️" };
-      document.getElementById('weather-icon').innerText = iconMap[data.current_weather.weathercode] || "☁️";
+      const icons = { 0:"☀️", 1:"🌤", 2:"☁️", 3:"☁️", 61:"☔️" };
+      document.getElementById('weather-icon').innerText = icons[data.current_weather.weathercode] || "☁️";
       document.getElementById('weather-temp').innerText = Math.round(data.current_weather.temperature) + "°";
-      
-      let html = "";
-      for(let i=3; i<=9; i+=3) {
-        html += `<div class="forecast-item">${data.hourly.time[i].slice(11,16)}<br>${iconMap[data.hourly.weathercode[i]]||"☁️"}<br>${Math.round(data.hourly.temperature_2m[i])}°</div>`;
-      }
-      document.getElementById('forecast-area').innerHTML = html;
+      let h = "";
+      for(let i=3; i<=9; i+=3) h += `<div>${data.hourly.time[i].slice(11,16)}<br>${icons[data.hourly.weathercode[i]]||"☁️"}${Math.round(data.hourly.temperature_2m[i])}°</div>`;
+      document.getElementById('hourly-forecast').innerHTML = h;
     });
   }
 
@@ -239,7 +246,7 @@
       dayCellContent: (e) => e.dayNumberText.replace('日', '')
     });
     cal.render();
-    updateClock(); setInterval(updateClock, 1000);
+    tick(); setInterval(tick, 1000);
     initNews(); initWeather();
   });
 </script>
