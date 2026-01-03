@@ -3,57 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Elite Airport Dashboard</title>
+  <title>Elite Airport Dashboard v5</title>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap');
-    :root { --bg: #0b0f14; --panel: #111827; --text: #e5e7eb; --sub: #9ca3af; --bright-sub: #dddddd; --accent: #3b82f6; --border: rgba(255,255,255,.08); }
+    :root { --bg: #0b0f14; --panel: #111827; --text: #ffffff; --sub: #9ca3af; --bright: #ffffff; --accent: #3b82f6; --border: rgba(255,255,255,.1); }
     * { box-sizing: border-box; }
     body {
       margin: 0; padding: 20px; height: 100vh; overflow: hidden; background: var(--bg); color: var(--text);
       font-family: 'Inter', sans-serif; display: grid; grid-template-columns: 4fr 3.2fr 2.8fr; gap: 20px;
     }
 
-    /* ログインボタン（ToDoエリア右上） */
     #auth-btn { background: #fff; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 900; cursor: pointer; font-size: 0.7rem; }
 
     .sync-container { display: flex; flex-direction: column; height: 100%; gap: 20px; min-height: 0; }
-    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; min-height: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; min-height: 0; }
 
-    /* --- Qiita流：反転フラップ式（パタパタ）時計 --- */
+    /* --- Qiita流パタパタ時計の完全固定配置 --- */
     .clock-container { display: flex; gap: 12px; align-items: center; margin-bottom: 5px; }
     .flip-unit {
       position: relative; width: 130px; height: 160px; background: #0b1220; border-radius: 12px;
       font-size: 11rem; line-height: 160px; text-align: center; font-weight: 900;
-      border: 1px solid rgba(255,255,255,.1); perspective: 1000px;
+      perspective: 1000px;
     }
-    /* フラップの構造パーツ */
-    .flap { position: absolute; width: 100%; height: 100%; left: 0; top: 0; border-radius: 12px; background: #0b1220; }
-    .flap.top { clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%); z-index: 10; border-bottom: 1px solid #000; }
-    .flap.bottom { clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%); z-index: 11; }
-    .flap.moving { z-index: 12; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: center; }
+    .flap {
+      position: absolute; width: 100%; height: 100%; left: 0; top: 0;
+      background: #0b1220; border-radius: 12px; backface-visibility: hidden;
+    }
+    .flap.top { clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%); z-index: 10; border-bottom: 1px solid rgba(0,0,0,0.5); }
+    .flap.bottom { clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%); z-index: 5; }
+    .flap.moving { z-index: 15; transform-origin: center; }
     
     .colon { font-size: 5rem; font-weight: 900; color: var(--sub); padding-bottom: 15px; }
 
-    /* --- リスト・予定スタイル --- */
+    /* --- リスト・予定 --- */
     h3 { margin: 0 0 10px 0; font-size: .75rem; letter-spacing: .15em; font-weight: 900; color: var(--sub); text-transform: uppercase; }
-    .scroll-area { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
+    .scroll-area { flex-grow: 1; overflow: auto; padding-right: 5px; }
     .item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; align-items: flex-start; }
     .item-time { font-weight: 900; color: var(--accent); min-width: 50px; }
-    .todo-check { width: 18px; height: 18px; border: 2px solid var(--sub); border-radius: 4px; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+    .todo-check { width: 20px; height: 20px; border: 2px solid var(--sub); border-radius: 4px; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
 
-    /* --- 2系統ニュース --- */
+    /* --- ニュース --- */
     .news-card { height: 160px; cursor: pointer; }
     .news-title { font-size: 1.05rem; font-weight: 900; line-height: 1.5; margin-top: 5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: #fff; }
     
-    /* --- 天気の極限スリム化 --- */
-    .weather-slim { height: 70px; flex-direction: row; align-items: center; justify-content: space-between; padding: 0 20px; }
+    /* --- 天気の視認性（太文字・高コントラスト） --- */
+    .weather-slim { height: 75px; flex-direction: row; align-items: center; justify-content: space-between; padding: 0 20px; }
     #weather-temp { font-size: 2.5rem; font-weight: 900; color: #fff; }
-    #weather-icon { font-size: 2.8rem; }
-    #hourly-forecast { display: flex; gap: 18px; font-size: 0.95rem; color: var(--bright-sub); font-weight: 900; }
+    #weather-icon { font-size: 3rem; }
+    #hourly-forecast { display: flex; gap: 20px; font-size: 1rem; color: #fff; font-weight: 900; }
 
     .kpi-box { height: 80px; flex-direction: row; justify-content: space-around; align-items: center; }
-    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
   </style>
 </head>
@@ -61,15 +62,15 @@
 
 <div class="sync-container">
   <div>
-    <div id="date" style="font-size: 1.4rem; font-weight: 900; color: var(--accent); margin-bottom: 5px;">2026.01.04</div>
+    <div id="date" style="font-size: 1.5rem; font-weight: 900; color: var(--accent); margin-bottom: 5px;">2026.01.04</div>
     <div class="clock-container">
-      <div class="flip-unit" id="hour-box">
+      <div class="flip-unit" id="h-unit">
         <div class="flap top" id="h-next">00</div>
         <div class="flap bottom" id="h-curr">00</div>
         <div class="flap moving" id="h-move">00</div>
       </div>
       <div class="colon">:</div>
-      <div class="flip-unit" id="min-box">
+      <div class="flip-unit" id="m-unit">
         <div class="flap top" id="m-next">00</div>
         <div class="flap bottom" id="m-curr">00</div>
         <div class="flap moving" id="m-move">00</div>
@@ -96,19 +97,19 @@
 <div class="sync-container">
   <div class="card news-card" id="news-tech">
     <h3 id="tech-source">TECH NEWS</h3>
-    <div class="news-title" id="tech-title">Loading...</div>
+    <div class="news-title" id="tech-title">Loading Tech News...</div>
   </div>
   <div class="card news-card" id="news-trend">
     <h3 id="trend-source">TRENDS / GENERAL</h3>
-    <div class="news-title" id="trend-title">Loading...</div>
+    <div class="news-title" id="trend-title">Loading Trends...</div>
   </div>
   <div class="card weather-slim">
     <div style="display:flex; align-items:center; gap:10px;"><span id="weather-icon">--</span><span id="weather-temp">--°</span></div>
     <div id="hourly-forecast"></div>
   </div>
   <div class="card kpi-box">
-    <div style="text-align:center;"><h3>NIKKEI</h3><b style="font-size:1.2rem;">39,450</b></div>
-    <div style="text-align:center;"><h3>USD/JPY</h3><b style="font-size:1.2rem;">149.12</b></div>
+    <div style="text-align:center;"><h3>NIKKEI</h3><b style="font-size:1.3rem;">39,450</b></div>
+    <div style="text-align:center;"><h3>USD/JPY</h3><b style="font-size:1.3rem;">149.12</b></div>
   </div>
 </div>
 
@@ -120,29 +121,36 @@
   const SCOPES = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks";
   let tokenClient, cal, currentTaskListId;
 
-  // --- Qiita流：パタパタ（反転フラップ）アニメーションの核 ---
-  async function turnFlap(unitId, nextVal) {
-    const nextEl = document.getElementById(unitId + '-next');
-    const currEl = document.getElementById(unitId + '-curr');
-    const moveEl = document.getElementById(unitId + '-move');
+  // --- Qiita流：パタパタ（反転フラップ）完全版ロジック ---
+  async function turnFlap(unitPrefix, nextVal) {
+    const nextEl = document.getElementById(unitPrefix + '-next');
+    const currEl = document.getElementById(unitPrefix + '-curr');
+    const moveEl = document.getElementById(unitPrefix + '-move');
 
-    if (moveEl.innerText === nextVal) return;
+    if (currEl.innerText === nextVal) return;
 
-    // 前半準備：背後に次回の値をセット
+    // 次の数字をセットして準備
     nextEl.innerText = nextVal;
     
-    // 前半回転（0 -> -90度）
-    let anim1 = moveEl.animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-90deg)' }], { duration: 300 });
+    // 1. 上半分を倒すアニメーション (-90度まで)
+    let anim1 = moveEl.animate([
+      { transform: 'rotateX(0deg)', opacity: 1 },
+      { transform: 'rotateX(-90deg)', opacity: 0.8 }
+    ], { duration: 300, fill: 'forwards' });
     await anim1.finished;
 
-    // 垂直になった瞬間に中身を入れ替え
+    // 2. 垂直になった瞬間に数字を切り替え、奥へ移動
     moveEl.innerText = nextVal;
     moveEl.style.transform = 'rotateX(90deg)';
 
-    // 後半回転（90 -> 0度）
-    let anim2 = moveEl.animate([{ transform: 'rotateX(90deg)' }, { transform: 'rotateX(0deg)' }], { duration: 300 });
+    // 3. 下半分として降りてくるアニメーション (90度から0度へ)
+    let anim2 = moveEl.animate([
+      { transform: 'rotateX(90deg)', opacity: 0.8 },
+      { transform: 'rotateX(0deg)', opacity: 1 }
+    ], { duration: 300, fill: 'forwards' });
     await anim2.finished;
 
+    // 4. ベースの数字を更新
     currEl.innerText = nextVal;
   }
 
@@ -150,8 +158,8 @@
     const now = new Date();
     const h = String(now.getHours()).padStart(2, '0');
     const m = String(now.getMinutes()).padStart(2, '0');
-    turnFlap('hour', h);
-    turnFlap('min', m);
+    turnFlap('h', h);
+    turnFlap('m', m);
     const w = ["日","月","火","水","木","金","土"][now.getDay()];
     document.getElementById('date').innerText = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}（${w}）`;
   }
@@ -199,7 +207,7 @@
     loadData(); 
   }
 
-  // --- 指定RSS取得 (Yahoo IT, ねとらぼ, Trends, Yahoo総合) ---
+  // --- 指定RSS取得 ---
   async function initNews() {
     const techFeeds = [
       { name: "YAHOO IT", url: "https://news.yahoo.co.jp/rss/topics/it.xml" },
@@ -210,28 +218,32 @@
       { name: "YAHOO 総合", url: "https://news.yahoo.co.jp/rss/topics/top-picks.xml" }
     ];
 
-    const cycle = async (feeds, titleId, sourceId, containerId) => {
+    const setupCycle = async (feeds, titleId, sourceId, containerId) => {
       let items = [];
       for (let f of feeds) {
         try {
           const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(f.url)}&t=${Date.now()}`);
           const data = await res.json();
-          if(data.items) data.items.forEach(i => items.push({ title: i.title, link: i.link, source: f.name }));
-        } catch(e) {}
+          if(data.items && data.items.length > 0) {
+            data.items.forEach(i => items.push({ title: i.title, link: i.link, source: f.name }));
+          }
+        } catch(e) { console.error("RSS Error:", e); }
       }
+      
       let idx = 0;
       const rotate = () => {
-        if(!items.length) return;
-        document.getElementById(titleId).innerText = items[idx].title;
-        document.getElementById(sourceId).innerText = `SOURCE: ${items[idx].source}`;
-        document.getElementById(containerId).onclick = () => window.open(items[idx].link, '_blank');
+        if(!items.length) { document.getElementById(titleId).innerText = "News Unavailable"; return; }
+        const item = items[idx];
+        document.getElementById(titleId).innerText = item.title;
+        document.getElementById(sourceId).innerText = `SOURCE: ${item.source}`;
+        document.getElementById(containerId).onclick = () => window.open(item.link, '_blank');
         idx = (idx + 1) % items.length;
       };
       if(items.length) { rotate(); setInterval(rotate, 10000); }
     };
 
-    cycle(techFeeds, 'tech-title', 'tech-source', 'news-tech');
-    cycle(trendFeeds, 'trend-title', 'trend-source', 'news-trend');
+    setupCycle(techFeeds, 'tech-title', 'tech-source', 'news-tech');
+    setupCycle(trendFeeds, 'trend-title', 'trend-source', 'news-trend');
   }
 
   async function initWeather() {
@@ -244,7 +256,8 @@
       document.getElementById('weather-temp').innerText = Math.round(data.current_weather.temperature);
       let html = "";
       for(let i=3; i<=9; i+=3) {
-        html += `<div>${data.hourly.time[i].slice(11,16)} ${iconMap[data.hourly.weathercode[i]]||"☁️"}${Math.round(data.hourly.temperature_2m[i])}°</div>`;
+        const time = data.hourly.time[i].slice(11,16);
+        html += `<div>${time}<br>${iconMap[data.hourly.weathercode[i]]||"☁️"}${Math.round(data.hourly.temperature_2m[i])}°</div>`;
       }
       document.getElementById('hourly-forecast').innerHTML = html;
     });
