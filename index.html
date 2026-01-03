@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Minimalist Pro Dashboard</title>
+  <title>Airport Minimal Pro v3</title>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap');
@@ -14,19 +14,17 @@
       font-family: 'Inter', sans-serif; display: grid; grid-template-columns: 4fr 3.2fr 2.8fr; gap: 20px;
     }
 
-    /* ログインボタンをTo-Doの右上に配置 */
     #auth-btn { background: #fff; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 900; cursor: pointer; font-size: 0.7rem; }
 
     .sync-container { display: flex; flex-direction: column; height: 100%; gap: 20px; min-height: 0; }
     .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; min-height: 0; }
 
-    /* --- 改良版：パタパタ（ソラリー）時計 --- */
+    /* --- 空港ソラリー式パタパタ時計 --- */
     .clock-container { display: flex; gap: 12px; align-items: center; margin-bottom: 5px; }
     .flip-card { 
       position: relative; width: 130px; height: 160px; background: #0b1220; border-radius: 12px; 
       font-size: 10rem; line-height: 160px; text-align: center; font-weight: 900; 
-      border: 1px solid rgba(255,255,255,.08);
-      perspective: 1000px;
+      border: 1px solid rgba(255,255,255,.08); perspective: 1000px;
     }
     .flip-card::after { 
       content: ""; position: absolute; top: 50%; left: 0; width: 100%; height: 2px; 
@@ -34,22 +32,18 @@
     }
     .colon { font-size: 4rem; font-weight: 900; color: var(--sub); padding-bottom: 10px; }
 
-    /* パタンと降りてくるアニメーション（開始を水平90度にする） */
-    .flap-move { animation: flap-down 0.5s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
+    .flap-move { animation: flap-down 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: top; }
     @keyframes flap-down { 
       0% { transform: rotateX(90deg); opacity: 0; } 
       100% { transform: rotateX(0deg); opacity: 1; } 
     }
 
-    /* --- リスト・予定 --- */
     h3 { margin: 0 0 10px 0; font-size: .7rem; letter-spacing: .15em; font-weight: 900; color: var(--sub); text-transform: uppercase; }
     .scroll-area { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
     .item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; align-items: flex-start; }
     .item-time { font-weight: 900; color: var(--accent); min-width: 50px; }
     .todo-check { width: 18px; height: 18px; border: 2px solid var(--sub); border-radius: 4px; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
-    .todo-check:hover { border-color: #fff; }
 
-    /* --- 2系統ニュース & 天気スリム化 --- */
     .news-card { height: 160px; cursor: pointer; }
     .news-title { font-size: 0.95rem; font-weight: 900; line-height: 1.5; margin-top: 5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     
@@ -73,7 +67,7 @@
       <div class="flip-card" id="m1">0</div><div class="flip-card" id="m2">0</div>
     </div>
   </div>
-  <div class="card" style="flex-grow: 1;"><div id="calendar"></div></div>
+  <div class="card" style="flex:1;"><div id="calendar"></div></div>
 </div>
 
 <div class="sync-container">
@@ -92,18 +86,15 @@
 
 <div class="sync-container">
   <div class="card news-card" id="news-tech">
-    <h3>TECH (ITmedia)</h3>
+    <h3 id="tech-source">TECH NEWS</h3>
     <div class="news-title" id="tech-title">Loading...</div>
   </div>
-  <div class="card news-card" id="news-ent">
-    <h3>ENT (Yahoo!)</h3>
-    <div class="news-title" id="ent-title">Loading...</div>
+  <div class="card news-card" id="news-trend">
+    <h3 id="trend-source">TRENDS / GENERAL</h3>
+    <div class="news-title" id="trend-title">Loading...</div>
   </div>
   <div class="card weather-slim">
-    <div style="display:flex; align-items:center; gap:10px;">
-      <span id="weather-icon">--</span>
-      <span id="weather-temp">--°</span>
-    </div>
+    <div style="display:flex; align-items:center; gap:10px;"><span id="weather-icon">--</span><span id="weather-temp">--°</span></div>
     <div id="hourly-forecast" style="display:flex; gap:12px; font-size:0.7rem; color:var(--sub); font-weight:700;"></div>
   </div>
   <div class="card kpi-box">
@@ -120,7 +111,6 @@
   const SCOPES = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks"; 
   let tokenClient, cal, currentTaskListId;
 
-  // --- パタパタロジック：開始を90度（水平）にしてパタンと倒す ---
   function updateFlip(id, val) {
     const el = document.getElementById(id);
     if (el.innerText !== val) {
@@ -133,10 +123,10 @@
 
   function tick() {
     const now = new Date();
-    updateFlip('h1', String(now.getHours()).padStart(2,'0')[0]);
-    updateFlip('h2', String(now.getHours()).padStart(2,'0')[1]);
-    updateFlip('m1', String(now.getMinutes()).padStart(2,'0')[0]);
-    updateFlip('m2', String(now.getMinutes()).padStart(2,'0')[1]);
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    updateFlip('h1', h[0]); updateFlip('h2', h[1]);
+    updateFlip('m1', m[0]); updateFlip('m2', m[1]);
     document.getElementById('date').innerText = now.toLocaleDateString('ja-JP', {year:'numeric', month:'2-digit', day:'2-digit', weekday:'short'}).toUpperCase();
   }
 
@@ -151,28 +141,18 @@
   }
   function handleAuthClick() { tokenClient.requestAccessToken({prompt: 'consent'}); }
 
-  // 日本時間（JST）の YYYY-MM-DD を取得
-  function getJSTDateStr(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
-
   async function loadData() {
     document.getElementById('auth-btn').style.display = 'none';
     const res = await gapi.client.calendar.events.list({ calendarId: 'primary', timeMin: new Date().toISOString(), singleEvents: true, orderBy: 'startTime' });
     const events = res.result.items.map(e => ({ title: e.summary, start: e.start.dateTime || e.start.date }));
     cal.removeAllEvents(); cal.addEventSource(events);
     
-    // 修正：日本時間で今日の予定をフィルタリング
-    const todayJST = getJSTDateStr(new Date());
+    const todayJST = new Date().toLocaleDateString('en-CA'); 
     const todayEvents = events.filter(e => e.start.startsWith(todayJST));
     document.getElementById('today-events').innerHTML = todayEvents.map(e => `
       <div class="item"><div class="item-time">${e.start.includes('T') ? e.start.slice(11,16) : 'ALL'}</div><div>${e.title}</div></div>
     `).join('') || '<div style="color:var(--sub)">予定なし</div>';
 
-    // ToDo & 完了連携
     const taskListRes = await gapi.client.tasks.tasklists.list();
     if (taskListRes.result.items) {
       currentTaskListId = taskListRes.result.items[0].id;
@@ -192,24 +172,38 @@
   }
 
   async function initNews() {
-    const feeds = [
-      { id: 'tech', url: 'https://rss.itmedia.co.jp/rss/2.0/aiplus.xml' },
-      { id: 'ent', url: 'https://news.yahoo.co.jp/rss/topics/entertainment.xml' }
+    const techFeeds = [
+      { name: "YAHOO IT", url: "https://news.yahoo.co.jp/rss/topics/it.xml" },
+      { name: "ねとらぼ", url: "https://news.yahoo.co.jp/rss/media/it_nlab/all.xml" }
     ];
-    for (let f of feeds) {
-      try {
-        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(f.url)}`);
-        const data = await res.json();
-        let idx = 0;
-        const rotate = () => {
-          if(!data.items) return;
-          document.getElementById(`${f.id}-title`).innerText = data.items[idx].title;
-          document.getElementById(`news-${f.id}`).onclick = () => window.open(data.items[idx].link, '_blank');
-          idx = (idx + 1) % data.items.length;
-        };
-        rotate(); setInterval(rotate, 12000);
-      } catch(e) {}
-    }
+    const trendFeeds = [
+      { name: "GOOGLE TRENDS", url: "https://trends.google.co.jp/trends/trendingsearches/daily/rss?geo=JP" },
+      { name: "YAHOO 総合", url: "https://news.yahoo.co.jp/rss/topics/top-picks.xml" }
+    ];
+
+    const setupCycle = async (feeds, titleId, sourceId, containerId) => {
+      let allItems = [];
+      for (let f of feeds) {
+        try {
+          const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(f.url)}`);
+          const data = await res.json();
+          data.items.forEach(i => allItems.push({ title: i.title, link: i.link, source: f.name }));
+        } catch(e) {}
+      }
+      let idx = 0;
+      const rotate = () => {
+        if(!allItems.length) return;
+        const item = allItems[idx];
+        document.getElementById(titleId).innerText = item.title;
+        document.getElementById(sourceId).innerText = `SOURCE: ${item.source}`;
+        document.getElementById(containerId).onclick = () => window.open(item.link, '_blank');
+        idx = (idx + 1) % allItems.length;
+      };
+      rotate(); setInterval(rotate, 10000);
+    };
+
+    setupCycle(techFeeds, 'tech-title', 'tech-source', 'news-tech');
+    setupCycle(trendFeeds, 'trend-title', 'trend-source', 'news-trend');
   }
 
   async function initWeather() {
