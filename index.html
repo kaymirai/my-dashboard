@@ -3,26 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Minimalist Pro Dashboard v8</title>
+  <title>Minimalist Pro Dashboard v9</title>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap');
     
     :root {
-      /* 色の定義：3色 + 状態色 */
+      /* 色定義 */
       --c-base:   #000000;
       --c-panel:  #111111;
       --c-text:   #ffffff;
-      --c-accent: #3b82f6; /* 青 */
-      
+      --c-accent: #3b82f6;
       --c-sub:    rgba(255, 255, 255, 0.5); 
       --c-border: rgba(255, 255, 255, 0.15);
       
-      /* ステータス用（例外的に許可） */
       --c-good:   #22c55e;
       --c-warn:   #ef4444;
 
-      /* 文字サイズ：3種類 */
+      /* 文字サイズ */
       --fz-lg: 1.8rem;
       --fz-md: 0.95rem;
       --fz-sm: 0.7rem;
@@ -46,7 +44,7 @@
       min-height: 0; overflow: hidden; position: relative;
     }
 
-    /* --- 左カラム --- */
+    /* --- Column Left --- */
     .col-left { display: flex; flex-direction: column; gap: 20px; overflow: hidden; height: 100%; }
     .clock-area { flex: 0 0 auto; padding: 0 0 5px 0; }
     
@@ -55,7 +53,6 @@
       margin-bottom: -10px; letter-spacing: -1px; margin-left: 2px;
     }
     .digital-clock {
-      /* 時計は特例サイズ */
       font-size: clamp(4.5rem, 10.5vw, 10rem); font-weight: 900; line-height: 1.0; 
       font-variant-numeric: tabular-nums; white-space: nowrap; 
       letter-spacing: -6px; margin-left: -5px; color: var(--c-text);
@@ -63,7 +60,7 @@
     #calendar-card { flex: 1; padding: 16px; }
     #calendar { width: 100%; height: 100%; }
 
-    /* --- 中央カラム --- */
+    /* --- Column Center --- */
     .col-center { display: flex; flex-direction: column; gap: 20px; overflow: hidden; height: 100%; }
     .schedule-card { flex: 0 1 auto; max-height: 45%; min-height: 120px; }
     .todo-card { flex: 1 1 0; min-height: 0; }
@@ -85,10 +82,9 @@
     }
     .todo-check:hover { border-color: var(--c-accent); }
 
-    /* --- 右カラム --- */
+    /* --- Column Right --- */
     .col-right { display: flex; flex-direction: column; gap: 12px; overflow: hidden; height: 100%; }
     
-    /* ニュース2枠 */
     .news-card { flex: 0 0 110px; cursor: pointer; justify-content: center; } 
     .news-src { font-size: var(--fz-sm); color: var(--c-accent); font-weight: 900; margin-bottom: 4px;}
     .news-title { 
@@ -96,7 +92,6 @@
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; 
     }
     
-    /* ステータス系 (小田急・災害) */
     .status-card { 
       flex: 0 0 85px; cursor: pointer; 
       display: flex; flex-direction: column; justify-content: center;
@@ -108,7 +103,6 @@
       border-radius: 4px; background: #222; color: #888; text-transform: uppercase; letter-spacing: 0.5px;
     }
     
-    /* 天気 */
     .weather-card { flex: 1; min-height: 0; justify-content: center; padding: 10px; }
     #weather-main { display: flex; align-items: center; justify-content: space-around; margin-bottom: 5px; }
     #weather-temp { font-size: 2.8rem; font-weight: 900; color: var(--c-text); line-height: 1; }
@@ -118,7 +112,6 @@
       padding-top: 8px; font-size: 0.7rem; color: var(--c-text); font-weight: 900; 
     }
     
-    /* 為替・株価 */
     .market-card { 
       flex: 0 0 70px; display: flex; flex-direction: row; justify-content: space-around; align-items: center; 
       background: var(--c-panel); border: 1px solid var(--c-border); border-radius: 12px; padding: 5px;
@@ -137,7 +130,6 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--c-panel); border: 1px solid var(--c-border); border-radius: 10px; }
     
-    /* FullCalendar */
     .fc { font-family: 'Inter', sans-serif; --fc-border-color: var(--c-border); --fc-today-bg-color: rgba(59,130,246,0.15); }
     .fc-toolbar-title { font-size: 1.3rem !important; font-weight: 900; letter-spacing: -0.5px; color: var(--c-text); margin-left: 4px; }
     .fc-col-header-cell-cushion { color: var(--c-sub); font-size: 0.7rem; text-decoration: none !important; py: 4px; }
@@ -234,11 +226,12 @@
     document.getElementById('date-display').innerText = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${w}`;
   }
 
-  /* --- Utils --- */
+  /* --- Fetch Utils --- */
+  // スクレイピング用Proxy: 優先順位を変更 (allorigins -> corsproxy -> codetabs)
   const proxyServices = [
-    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
     (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`
+    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
   ];
   async function fetchWithRetry(url) {
     for (const getProxy of proxyServices) {
@@ -250,30 +243,29 @@
     return null;
   }
   
-  async function fetchRSS(feedUrl) {
-    const text = await fetchWithRetry(feedUrl);
-    if (!text) return null;
-    const xml = new DOMParser().parseFromString(text, "text/xml");
-    const items = Array.from(xml.querySelectorAll("item")).map(i => ({
-      t: i.querySelector("title")?.textContent || "",
-      l: i.querySelector("link")?.textContent || "#"
-    }));
-    return items;
+  // RSS専用: rss2json を使用 (安定性重視)
+  async function fetchRSS_JSON(feedUrl) {
+    try {
+        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`);
+        if(res.ok) {
+            const data = await res.json();
+            if(data.items) return data.items.map(i => ({ t: i.title, l: i.link }));
+        }
+    } catch(e) { console.error(e); }
+    return null;
   }
 
-  /* --- Railway Monitor (修正版) --- */
+  /* --- Railway Monitor --- */
   async function initRailway() {
-    const html = await fetchWithRetry('https://transit.yahoo.co.jp/diainfo/109/0'); // 小田急小田原線
+    const html = await fetchWithRetry('https://transit.yahoo.co.jp/diainfo/109/0'); 
     const badge = document.getElementById('rail-status');
     
-    // データ取得失敗時
     if (!html) { 
         badge.innerText = "UNKNOWN"; 
         return; 
     }
 
-    // 判定ロジック強化
-    // Yahooの通常文言: "事故・遅延に関する情報はありません"
+    // 判定ロジック：複数の平常ワードをチェック
     if (html.includes('平常運転') || html.includes('平常どおり') || html.includes('に関する情報はありません')) {
         badge.innerText = "● NORMAL"; 
         badge.style.color = "var(--c-good)"; 
@@ -283,28 +275,24 @@
         badge.style.color = "var(--c-warn)"; 
         badge.style.background = "rgba(239, 68, 68, 0.2)";
     } else {
-        // どちらの文言も拾えなかった場合（ページ構造変化やエラー画面など）
-        // むやみに赤にせずUNKNOWNとする
         badge.innerText = "UNKNOWN";
         badge.style.color = "var(--c-sub)";
         badge.style.background = "rgba(255, 255, 255, 0.1)";
     }
   }
 
-  /* --- Disaster Monitor (修正版) --- */
+  /* --- Disaster Monitor --- */
   async function initDisaster() {
-    // NHK社会RSS
-    const items = await fetchRSS('https://www3.nhk.or.jp/rss/news/cat1.xml'); 
+    // RSS JSON APIを使用
+    const items = await fetchRSS_JSON('https://www3.nhk.or.jp/rss/news/cat1.xml'); 
     const badge = document.getElementById('disaster-status');
     const titleEl = document.querySelector('#disaster-card .status-main');
     
     if (!items || items.length === 0) { badge.innerText = "UNKNOWN"; return; }
     
-    // 監視キーワード
     const dangerWords = ["震度", "地震", "津波", "警報", "避難指示", "特別警報"];
-    const ignoreWords = ["訓練", "誤報"]; // 除外キーワード
+    const ignoreWords = ["訓練", "誤報"];
 
-    // 「危険ワードを含み」かつ「除外ワードを含まない」ニュースを探す
     const alertItem = items.find(i => {
         return dangerWords.some(dw => i.t.includes(dw)) && 
                !ignoreWords.some(iw => i.t.includes(iw));
@@ -315,7 +303,6 @@
         badge.style.color = "var(--c-warn)"; 
         badge.style.background = "rgba(239, 68, 68, 0.2)";
         titleEl.innerText = "警戒情報あり";
-        // カードクリックでそのニュースへ
         document.getElementById('disaster-card').onclick = () => window.open(alertItem.l, '_blank');
     } else {
         badge.innerText = "● NO ALERTS"; 
@@ -331,7 +318,8 @@
     const feeds2 = [{ name: 'Trend', url: 'https://news.yahoo.co.jp/rss/topics/top-picks.xml' }];
     
     const setupFeed = async (feeds, titleId, srcId, cardId) => {
-      const items = await fetchRSS(feeds[0].url);
+      // 安定版 rss2json を使用
+      const items = await fetchRSS_JSON(feeds[0].url);
       if(items && items.length > 0) {
         let idx = 0;
         const rotate = () => {
@@ -341,6 +329,9 @@
           idx = (idx + 1) % items.length;
         };
         rotate(); setInterval(rotate, 10000);
+      } else {
+        document.getElementById(titleId).innerText = "取得失敗";
+        document.getElementById(srcId).innerText = "OFFLINE/ERROR";
       }
     };
     setupFeed(feeds1, 'tech-title', 'tech-src', 'news-tech');
@@ -352,7 +343,7 @@
     navigator.geolocation.getCurrentPosition(async (pos) => {
       const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&hourly=temperature_2m,weathercode&current_weather=true&timezone=Asia%2FTokyo`);
       const d = await res.json();
-      const icons = { 0:"☀️", 1:"🌤", 2:"☁️", 3:"☁️", 61:"☔️", 63:"☔️", 80:"☔️", 95:"⚡️" };
+      const icons = { 0:☀️", 1:"🌤", 2:"☁️", 3:"☁️", 61:"☔️", 63:"☔️", 80:"☔️", 95:"⚡️" };
       document.getElementById('weather-icon').innerText = icons[d.current_weather.weathercode] || "☁️";
       document.getElementById('weather-temp').innerText = Math.round(d.current_weather.temperature) + "°";
       let h = "";
